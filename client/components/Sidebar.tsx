@@ -8,7 +8,7 @@ export function Sidebar() {
     { icon: Home, label: "Dashboard", path: "/", active: location.pathname === "/" },
     { icon: Flag, label: "Issues", path: "/issues", active: location.pathname === "/issues" },
     { icon: BarChart3, label: "Analytics", path: "/analytics", active: location.pathname === "/analytics" },
-    { icon: FileText, label: "Reports", path: "#", active: false },
+    { icon: FileText, label: "Reports", path: "/reports", active: location.pathname === "/reports" },
     { icon: Settings, label: "Settings", path: "#", active: false },
   ];
 
