@@ -1,12 +1,15 @@
 import { Home, Flag, BarChart3, FileText, Settings } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 export function Sidebar() {
+  const location = useLocation();
+
   const navItems = [
-    { icon: Home, label: "Dashboard", active: true },
-    { icon: Flag, label: "Issues", active: false },
-    { icon: BarChart3, label: "Analytics", active: false },
-    { icon: FileText, label: "Reports", active: false },
-    { icon: Settings, label: "Settings", active: false },
+    { icon: Home, label: "Dashboard", path: "/", active: location.pathname === "/" },
+    { icon: Flag, label: "Issues", path: "#", active: false },
+    { icon: BarChart3, label: "Analytics", path: "/analytics", active: location.pathname === "/analytics" },
+    { icon: FileText, label: "Reports", path: "#", active: false },
+    { icon: Settings, label: "Settings", path: "#", active: false },
   ];
 
   return (
@@ -35,10 +38,28 @@ export function Sidebar() {
         <nav className="space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
+
+            if (item.path === "#") {
+              return (
+                <div
+                  key={item.label}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    item.active
+                      ? "bg-dashboard-accent text-dashboard-text-primary"
+                      : "text-dashboard-text-primary hover:bg-dashboard-accent"
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                </div>
+              );
+            }
+
             return (
-              <div
+              <Link
                 key={item.label}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                to={item.path}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   item.active
                     ? "bg-dashboard-accent text-dashboard-text-primary"
                     : "text-dashboard-text-primary hover:bg-dashboard-accent"
@@ -46,7 +67,7 @@ export function Sidebar() {
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
-              </div>
+              </Link>
             );
           })}
         </nav>
