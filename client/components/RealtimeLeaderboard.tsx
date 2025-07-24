@@ -51,36 +51,56 @@ export function RealtimeLeaderboard() {
       {/* Table */}
       <div className="px-4 pb-3">
         <div className="border border-dashboard-border rounded-lg bg-dashboard-bg overflow-hidden">
-          {/* Table Header */}
-          <div className="bg-dashboard-bg border-b border-gray-200">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="px-4 py-3">
-                <span className="text-dashboard-text-primary text-sm font-medium">Department</span>
-              </div>
-              <div className="px-4 py-3">
-                <span className="text-dashboard-text-primary text-sm font-medium">Issues Resolved</span>
-              </div>
-              <div className="px-4 py-3">
-                <span className="text-dashboard-text-primary text-sm font-medium">Avg. Rating</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Table Body */}
-          <div className="bg-white">
+          {/* Mobile Table - Stack on small screens */}
+          <div className="block md:hidden">
             {departmentData.map((dept, index) => (
-              <div key={index} className="grid grid-cols-3 gap-4 border-t border-gray-200">
-                <div className="px-4 py-4 flex items-center">
-                  <span className="text-dashboard-text-primary text-sm">{dept.name}</span>
-                </div>
-                <div className="px-4 py-4 flex items-center">
+              <div key={index} className="bg-white border-t border-gray-200 first:border-t-0 p-4 space-y-2">
+                <div className="font-medium text-dashboard-text-primary">{dept.name}</div>
+                <div className="flex justify-between">
+                  <span className="text-dashboard-text-secondary text-sm">Resolved:</span>
                   <span className="text-dashboard-text-secondary text-sm">{dept.resolved}</span>
                 </div>
-                <div className="px-4 py-4 flex items-center">
+                <div className="flex justify-between">
+                  <span className="text-dashboard-text-secondary text-sm">Rating:</span>
                   <span className="text-dashboard-text-secondary text-sm">{dept.rating}</span>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block">
+            {/* Table Header */}
+            <div className="bg-dashboard-bg border-b border-gray-200">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="px-4 py-3">
+                  <span className="text-dashboard-text-primary text-sm font-medium">Department</span>
+                </div>
+                <div className="px-4 py-3">
+                  <span className="text-dashboard-text-primary text-sm font-medium">Issues Resolved</span>
+                </div>
+                <div className="px-4 py-3">
+                  <span className="text-dashboard-text-primary text-sm font-medium">Avg. Rating</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Body */}
+            <div className="bg-white">
+              {departmentData.map((dept, index) => (
+                <div key={index} className="grid grid-cols-3 gap-4 border-t border-gray-200">
+                  <div className="px-4 py-4 flex items-center">
+                    <span className="text-dashboard-text-primary text-sm">{dept.name}</span>
+                  </div>
+                  <div className="px-4 py-4 flex items-center">
+                    <span className="text-dashboard-text-secondary text-sm">{dept.resolved}</span>
+                  </div>
+                  <div className="px-4 py-4 flex items-center">
+                    <span className="text-dashboard-text-secondary text-sm">{dept.rating}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
