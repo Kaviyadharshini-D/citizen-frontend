@@ -6,7 +6,7 @@ export function Sidebar() {
 
   const navItems = [
     { icon: Home, label: "Dashboard", path: "/", active: location.pathname === "/" },
-    { icon: Flag, label: "Issues", path: "#", active: false },
+    { icon: Flag, label: "Issues", path: "/issues", active: location.pathname === "/issues" },
     { icon: BarChart3, label: "Analytics", path: "/analytics", active: location.pathname === "/analytics" },
     { icon: FileText, label: "Reports", path: "#", active: false },
     { icon: Settings, label: "Settings", path: "#", active: false },
