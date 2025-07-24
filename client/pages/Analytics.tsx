@@ -1,3 +1,5 @@
+import { Layout } from "../components/Layout";
+
 export default function Analytics() {
   const summaryCards = [
     { title: "Total Queries", value: "1,234" },
