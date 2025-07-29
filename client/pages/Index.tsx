@@ -6,6 +6,7 @@ import { PanchayatBreakdown } from "../components/PanchayatBreakdown";
 import { RealtimeLeaderboard } from "../components/RealtimeLeaderboard";
 import { AIAlerts } from "../components/AIAlerts";
 import { DepartmentDashboard } from "../components/DepartmentDashboard";
+import { UserDashboard } from "../components/UserDashboard";
 import { useUser } from "../context/UserContext";
 
 export default function Index() {
@@ -16,6 +17,8 @@ export default function Index() {
       <div className="bg-dashboard-bg min-h-screen">
         {user.role === 'Department' ? (
           <DepartmentDashboard />
+        ) : user.role === 'Normal User' ? (
+          <UserDashboard />
         ) : (
           <div className="max-w-[960px] mx-auto px-4 lg:px-0">
             {/* Header */}
