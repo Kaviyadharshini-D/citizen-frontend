@@ -1,6 +1,22 @@
 import { Layout } from "../components/Layout";
+import { DepartmentAnalytics } from "../components/DepartmentAnalytics";
+import { useUser } from "../context/UserContext";
 
 export default function Analytics() {
+  const { user } = useUser();
+
+  // Show Department-specific analytics for Department role
+  if (user.role === 'Department') {
+    return (
+      <Layout>
+        <div className="bg-dashboard-bg min-h-screen">
+          <DepartmentAnalytics />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show default analytics for other roles
   const summaryCards = [
     { title: "Total Queries", value: "1,234" },
     { title: "Avg Resolution Time", value: "3 days" },
