@@ -19,20 +19,20 @@ export function Sidebar() {
           { icon: Flag, label: "Issues", path: "/issues", active: location.pathname === "/issues" },
           { icon: BarChart3, label: "Analytics", path: "/analytics", active: location.pathname === "/analytics" },
           { icon: FileText, label: "Reports", path: "/reports", active: location.pathname === "/reports" },
-          { icon: Settings, label: "Settings", path: "#", active: false },
+          { icon: Settings, label: "Settings", path: "/settings", active: location.pathname === "/settings" },
         ];
       case 'Department':
         return [
           ...baseItems,
           { icon: BarChart3, label: "Analytics", path: "/analytics", active: location.pathname === "/analytics" },
-          { icon: Settings, label: "Settings", path: "#", active: false },
+          { icon: Settings, label: "Settings", path: "/settings", active: location.pathname === "/settings" },
         ];
       case 'Normal User':
         return [
           ...baseItems,
           { icon: BarChart3, label: "Analytics", path: "/analytics", active: location.pathname === "/analytics" },
           { icon: FileText, label: "Reports", path: "/reports", active: location.pathname === "/reports" },
-          { icon: Settings, label: "Settings", path: "#", active: false },
+          { icon: Settings, label: "Settings", path: "/settings", active: location.pathname === "/settings" },
         ];
       default:
         return baseItems;
