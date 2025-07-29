@@ -42,7 +42,7 @@ export function Sidebar() {
   const navItems = getNavItems();
 
   return (
-    <div className="w-80 min-h-screen bg-dashboard-bg flex flex-col lg:flex hidden">
+    <div className="w-80 min-h-screen bg-dashboard-bg flex flex-col hidden lg:flex">
       <div className="p-4 flex-1">
         {/* User Profile */}
         <div className="flex items-center gap-3 mb-4">
