@@ -1,5 +1,6 @@
 import { Layout } from "../components/Layout";
 import { DepartmentAnalytics } from "../components/DepartmentAnalytics";
+import { UserAnalytics } from "../components/UserAnalytics";
 import { useUser } from "../context/UserContext";
 
 export default function Analytics() {
@@ -11,6 +12,17 @@ export default function Analytics() {
       <Layout>
         <div className="bg-dashboard-bg min-h-screen">
           <DepartmentAnalytics />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show User-specific analytics for Normal User role
+  if (user.role === 'Normal User') {
+    return (
+      <Layout>
+        <div className="bg-dashboard-bg min-h-screen">
+          <UserAnalytics />
         </div>
       </Layout>
     );
