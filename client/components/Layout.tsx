@@ -13,8 +13,9 @@ export function Layout({ children }: LayoutProps) {
       <Sidebar />
       
       {/* Main Content */}
-      <div className="flex-1 max-w-none">
+      <div className="flex-1 max-w-none relative">
         {children}
+        <RoleSwitcher />
       </div>
     </div>
   );
