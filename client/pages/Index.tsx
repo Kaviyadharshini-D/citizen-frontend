@@ -5,30 +5,38 @@ import { DepartmentAnalytics } from "../components/DepartmentAnalytics";
 import { PanchayatBreakdown } from "../components/PanchayatBreakdown";
 import { RealtimeLeaderboard } from "../components/RealtimeLeaderboard";
 import { AIAlerts } from "../components/AIAlerts";
+import { DepartmentDashboard } from "../components/DepartmentDashboard";
+import { useUser } from "../context/UserContext";
 
 export default function Index() {
+  const { user } = useUser();
+
   return (
     <Layout>
       <div className="bg-dashboard-bg min-h-screen">
-        <div className="max-w-[960px] mx-auto px-4 lg:px-0">
-          {/* Header */}
-          <DashboardHeader />
+        {user.role === 'Department' ? (
+          <DepartmentDashboard />
+        ) : (
+          <div className="max-w-[960px] mx-auto px-4 lg:px-0">
+            {/* Header */}
+            <DashboardHeader />
 
-          {/* Real-time Summary */}
-          <RealtimeSummary />
+            {/* Real-time Summary */}
+            <RealtimeSummary />
 
-          {/* Department Analytics */}
-          <DepartmentAnalytics />
+            {/* Department Analytics */}
+            <DepartmentAnalytics />
 
-          {/* Panchayat-level Breakdown */}
-          <PanchayatBreakdown />
+            {/* Panchayat-level Breakdown */}
+            <PanchayatBreakdown />
 
-          {/* Real-time Leaderboard */}
-          <RealtimeLeaderboard />
+            {/* Real-time Leaderboard */}
+            <RealtimeLeaderboard />
 
-          {/* AI Alerts */}
-          <AIAlerts />
-        </div>
+            {/* AI Alerts */}
+            <AIAlerts />
+          </div>
+        )}
       </div>
     </Layout>
   );
