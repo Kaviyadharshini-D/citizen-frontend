@@ -1,142 +1,104 @@
-import { Search, ChevronDown } from "lucide-react";
+import React from 'react';
+
+interface Issue {
+  panchayat: string;
+  category: string;
+  title: string;
+  description: string;
+  upvotes: number;
+  image: string;
+}
+
+const issues: Issue[] = [
+  {
+    panchayat: "Village A",
+    category: "Road Repair",
+    title: "Road in Village A is in poor condition",
+    description: "The main road in Village A has deteriorated significantly, causing inconvenience and safety hazards for residents. Immediate repair is needed.",
+    upvotes: 100,
+    image: "https://api.builder.io/api/v1/image/assets/TEMP/510ae645d15994b3c8199360ae459549d01973b3?width=618"
+  },
+  {
+    panchayat: "Village B",
+    category: "Water Supply",
+    title: "Water supply issues in Village B",
+    description: "Residents of Village B are facing irregular and insufficient water supply. This issue needs urgent attention to ensure access to clean water.",
+    upvotes: 100,
+    image: "https://api.builder.io/api/v1/image/assets/TEMP/6320aecb7609d461f4057ee574d51dfa1c9a9be7?width=618"
+  },
+  {
+    panchayat: "Village C",
+    category: "Street Lights",
+    title: "Non-functional street lights in Village C",
+    description: "Many street lights in Village C are not working, leading to safety concerns during the night. Repair or replacement of these lights is required.",
+    upvotes: 100,
+    image: "https://api.builder.io/api/v1/image/assets/TEMP/8195657ae6f553957ca1962ee7904a3be5f21dfa?width=618"
+  }
+];
 
 export function DepartmentAnalytics() {
-  const departments = [
-    { name: "Road Maintenance", issueCount: "450", resolutionTime: "3 days", satisfaction: 85 },
-    { name: "Water Supply", issueCount: "300", resolutionTime: "4 days", satisfaction: 78 },
-    { name: "Waste Management", issueCount: "250", resolutionTime: "2 days", satisfaction: 92 },
-    { name: "Street Lighting", issueCount: "150", resolutionTime: "1 day", satisfaction: 95 },
-    { name: "Public Safety", issueCount: "100", resolutionTime: "5 days", satisfaction: 70 },
-  ];
-
   return (
-    <div className="bg-white">
-      {/* Section Header */}
-      <div className="px-4 py-5">
-        <h2 className="text-dashboard-text-primary text-[22px] font-bold leading-7">
-          Department Analytics
-        </h2>
+    <div className="max-w-[960px] mx-auto px-4 lg:px-0 py-4">
+      {/* Header */}
+      <div className="mb-6 px-4">
+        <h1 className="text-xl font-bold text-gray-900 font-jakarta">
+          Issue Feed
+        </h1>
       </div>
 
-      {/* Search Bar */}
-      <div className="px-4 pb-3">
-        <div className="flex items-center bg-dashboard-accent rounded-lg">
-          <div className="flex items-center justify-center pl-4">
-            <Search size={20} className="text-dashboard-text-secondary" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search departments"
-            className="flex-1 bg-transparent px-2 py-3 text-dashboard-text-secondary placeholder:text-dashboard-text-secondary focus:outline-none"
-          />
-        </div>
-      </div>
-
-      {/* Filter Controls */}
-      <div className="px-3 pb-3">
+      {/* Filter Tabs */}
+      <div className="px-4 mb-6">
         <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 bg-dashboard-accent rounded-lg px-4 py-2 cursor-pointer hover:bg-dashboard-border transition-colors">
-            <span className="text-dashboard-text-primary text-sm font-medium">
-              Sort by: Issue Count
-            </span>
-            <ChevronDown size={16} />
-          </div>
-          <div className="flex items-center gap-2 bg-dashboard-accent rounded-lg px-4 py-2 cursor-pointer hover:bg-dashboard-border transition-colors">
-            <span className="text-dashboard-text-primary text-sm font-medium">
-              Filter: High Priority
-            </span>
-            <ChevronDown size={16} />
-          </div>
-          <div className="flex items-center gap-2 bg-dashboard-accent rounded-lg px-4 py-2 cursor-pointer hover:bg-dashboard-border transition-colors">
-            <span className="text-dashboard-text-primary text-sm font-medium">
-              Filter: Open
-            </span>
-            <ChevronDown size={16} />
-          </div>
+          <button className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium font-jakarta">
+            Latest
+          </button>
+          <button className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium font-jakarta">
+            Most Upvoted
+          </button>
+          <button className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium font-jakarta">
+            By Category
+          </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="px-4 pb-3">
-        <div className="border border-dashboard-border rounded-lg bg-dashboard-bg overflow-hidden">
-          {/* Mobile Table - Stack on small screens */}
-          <div className="block md:hidden">
-            {departments.map((dept, index) => (
-              <div key={index} className="bg-white border-t border-gray-200 first:border-t-0 p-4 space-y-2">
-                <div className="font-medium text-dashboard-text-primary">{dept.name}</div>
-                <div className="flex justify-between">
-                  <span className="text-dashboard-text-secondary text-sm">Issues:</span>
-                  <span className="text-dashboard-text-secondary text-sm">{dept.issueCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-dashboard-text-secondary text-sm">Resolution:</span>
-                  <span className="text-dashboard-text-secondary text-sm">{dept.resolutionTime}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-dashboard-text-secondary text-sm">Satisfaction:</span>
-                  <div className="flex-1 bg-dashboard-border rounded-sm h-1">
-                    <div
-                      className="bg-dashboard-blue h-1 rounded-sm"
-                      style={{ width: `${dept.satisfaction}%` }}
-                    />
+      {/* Issue Feed */}
+      <div className="space-y-4 px-4">
+        {issues.map((issue, index) => (
+          <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
+            <div className="flex justify-between items-start gap-4">
+              {/* Content */}
+              <div className="flex-1 space-y-4">
+                <div className="space-y-1">
+                  <div className="text-sm text-blue-600 font-jakarta">
+                    Panchayat: {issue.panchayat} | Category: {issue.category}
                   </div>
-                  <span className="text-dashboard-text-primary text-sm font-medium">
-                    {dept.satisfaction}
+                  <h3 className="text-base font-bold text-gray-900 font-jakarta leading-tight">
+                    {issue.title}
+                  </h3>
+                  <p className="text-sm text-blue-600 font-jakarta leading-relaxed">
+                    {issue.description}
+                  </p>
+                </div>
+                
+                {/* Upvotes Badge */}
+                <div className="inline-flex items-center px-4 py-1 bg-gray-100 rounded-lg">
+                  <span className="text-sm font-medium text-gray-900 font-jakarta">
+                    {issue.upvotes} Upvotes
                   </span>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Desktop Table */}
-          <div className="hidden md:block">
-            {/* Table Header */}
-            <div className="bg-dashboard-bg border-b border-gray-200">
-              <div className="grid grid-cols-4 gap-4">
-                <div className="px-4 py-3">
-                  <span className="text-dashboard-text-primary text-sm font-medium">Department</span>
-                </div>
-                <div className="px-4 py-3">
-                  <span className="text-dashboard-text-primary text-sm font-medium">Issue Count</span>
-                </div>
-                <div className="px-4 py-3">
-                  <span className="text-dashboard-text-primary text-sm font-medium">Avg. Resolution Time</span>
-                </div>
-                <div className="px-4 py-3">
-                  <span className="text-dashboard-text-primary text-sm font-medium">Satisfaction Rate</span>
-                </div>
+              {/* Image */}
+              <div className="flex-shrink-0">
+                <img
+                  src={issue.image}
+                  alt={issue.title}
+                  className="w-32 h-32 object-cover rounded-lg"
+                />
               </div>
             </div>
-
-            {/* Table Body */}
-            <div className="bg-white">
-              {departments.map((dept, index) => (
-                <div key={index} className="grid grid-cols-4 gap-4 border-t border-gray-200">
-                  <div className="px-4 py-4 flex items-center">
-                    <span className="text-dashboard-text-primary text-sm">{dept.name}</span>
-                  </div>
-                  <div className="px-4 py-4 flex items-center">
-                    <span className="text-dashboard-text-secondary text-sm">{dept.issueCount}</span>
-                  </div>
-                  <div className="px-4 py-4 flex items-center">
-                    <span className="text-dashboard-text-secondary text-sm">{dept.resolutionTime}</span>
-                  </div>
-                  <div className="px-4 py-4 flex items-center gap-3">
-                    <div className="flex-1 bg-dashboard-border rounded-sm h-1">
-                      <div
-                        className="bg-dashboard-blue h-1 rounded-sm"
-                        style={{ width: `${dept.satisfaction}%` }}
-                      />
-                    </div>
-                    <span className="text-dashboard-text-primary text-sm font-medium">
-                      {dept.satisfaction}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
