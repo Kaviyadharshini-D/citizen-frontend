@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
 import Issues from "./pages/Issues";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/issues" element={<Issues />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
