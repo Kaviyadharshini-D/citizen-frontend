@@ -1,63 +1,45 @@
 import React from 'react';
+import { DepartmentDashboardData, Employee } from '../data/dashboardData';
 
-interface Employee {
-  name: string;
-  assignedQueries: number;
-  resolvedQueries: number;
-  pendingQueries: number;
-  status: 'Active' | 'Inactive';
+interface DepartmentDashboardProps {
+  data: DepartmentDashboardData;
+  loading?: boolean;
 }
 
-const employees: Employee[] = [
-  {
-    name: "Ethan Harper",
-    assignedQueries: 30,
-    resolvedQueries: 25,
-    pendingQueries: 5,
-    status: "Active"
-  },
-  {
-    name: "Olivia Bennett",
-    assignedQueries: 25,
-    resolvedQueries: 20,
-    pendingQueries: 5,
-    status: "Active"
-  },
-  {
-    name: "Noah Carter",
-    assignedQueries: 20,
-    resolvedQueries: 18,
-    pendingQueries: 2,
-    status: "Active"
-  },
-  {
-    name: "Ava Mitchell",
-    assignedQueries: 25,
-    resolvedQueries: 22,
-    pendingQueries: 3,
-    status: "Active"
-  },
-  {
-    name: "Liam Foster",
-    assignedQueries: 25,
-    resolvedQueries: 20,
-    pendingQueries: 5,
-    status: "Active"
+export function DepartmentDashboard({ data, loading = false }: DepartmentDashboardProps) {
+  if (loading) {
+    return (
+      <div className="max-w-[960px] mx-auto px-4 lg:px-0 py-4">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-xl p-6">
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+          <div className="h-64 bg-gray-200 rounded-xl"></div>
+        </div>
+      </div>
+    );
   }
-];
 
-export function DepartmentDashboard() {
+  const { title, description, summaryStats, employees } = data;
+
   return (
     <div className="max-w-[960px] mx-auto px-4 lg:px-0 py-4">
       {/* Header */}
       <div className="mb-6">
         <div className="mb-3">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 font-['Plus_Jakarta_Sans']">
-            Department Dashboard
+            {title}
           </h1>
         </div>
         <p className="text-sm text-gray-500 font-['Plus_Jakarta_Sans']">
-          Track and manage queries assigned to your department.
+          {description}
         </p>
       </div>
 
@@ -70,7 +52,7 @@ export function DepartmentDashboard() {
             </h3>
           </div>
           <div className="text-2xl font-bold text-gray-900 font-['Plus_Jakarta_Sans']">
-            125
+            {summaryStats.totalQueries.toLocaleString()}
           </div>
         </div>
 
@@ -81,7 +63,7 @@ export function DepartmentDashboard() {
             </h3>
           </div>
           <div className="text-2xl font-bold text-gray-900 font-['Plus_Jakarta_Sans']">
-            85%
+            {summaryStats.querySolvingRate}%
           </div>
         </div>
 
@@ -92,7 +74,7 @@ export function DepartmentDashboard() {
             </h3>
           </div>
           <div className="text-2xl font-bold text-gray-900 font-['Plus_Jakarta_Sans']">
-            3 days
+            {summaryStats.averageResolutionTime}
           </div>
         </div>
       </div>
@@ -130,7 +112,7 @@ export function DepartmentDashboard() {
             </thead>
             <tbody>
               {employees.map((employee, index) => (
-                <tr key={employee.name} className={index > 0 ? "border-t border-gray-200" : ""}>
+                <tr key={employee.id} className={index > 0 ? "border-t border-gray-200" : ""}>
                   <td className="p-4 text-sm text-gray-900 font-['Plus_Jakarta_Sans']">
                     {employee.name}
                   </td>
@@ -144,7 +126,11 @@ export function DepartmentDashboard() {
                     {employee.pendingQueries}
                   </td>
                   <td className="p-4">
-                    <span className="inline-flex items-center px-4 py-1 rounded-xl bg-gray-100 text-sm font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
+                    <span className={`inline-flex items-center px-4 py-1 rounded-xl text-sm font-medium font-['Plus_Jakarta_Sans'] ${
+                      employee.status === 'Active' 
+                        ? 'bg-green-100 text-green-900' 
+                        : 'bg-gray-100 text-gray-900'
+                    }`}>
                       {employee.status}
                     </span>
                   </td>
@@ -157,12 +143,16 @@ export function DepartmentDashboard() {
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4 p-4">
           {employees.map((employee) => (
-            <div key={employee.name} className="bg-white rounded-lg p-4 border border-gray-200">
+            <div key={employee.id} className="bg-white rounded-lg p-4 border border-gray-200">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
                   {employee.name}
                 </h3>
-                <span className="inline-flex items-center px-3 py-1 rounded-xl bg-gray-100 text-sm font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
+                <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-medium font-['Plus_Jakarta_Sans'] ${
+                  employee.status === 'Active' 
+                    ? 'bg-green-100 text-green-900' 
+                    : 'bg-gray-100 text-gray-900'
+                }`}>
                   {employee.status}
                 </span>
               </div>
@@ -189,6 +179,11 @@ export function DepartmentDashboard() {
             </div>
           ))}
         </div>
+      </div>
+      
+      {/* Data freshness indicator */}
+      <div className="mt-4 text-xs text-gray-400 text-center font-['Plus_Jakarta_Sans']">
+        Last updated: {new Date(data.lastUpdated).toLocaleString()}
       </div>
     </div>
   );
