@@ -6,7 +6,7 @@ export interface Employee {
   assignedQueries: number;
   resolvedQueries: number;
   pendingQueries: number;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   department?: string;
   joinDate?: string;
 }
@@ -38,7 +38,7 @@ export const mockDepartmentData: DepartmentDashboardData = {
     averageResolutionTime: "3 days",
     activeEmployees: 5,
     pendingQueries: 20,
-    resolvedQueries: 105
+    resolvedQueries: 105,
   },
   employees: [
     {
@@ -49,27 +49,27 @@ export const mockDepartmentData: DepartmentDashboardData = {
       pendingQueries: 5,
       status: "Active",
       department: "Public Services",
-      joinDate: "2023-01-15"
+      joinDate: "2023-01-15",
     },
     {
-      id: "emp_002", 
+      id: "emp_002",
       name: "Olivia Bennett",
       assignedQueries: 25,
       resolvedQueries: 20,
       pendingQueries: 5,
       status: "Active",
       department: "Public Services",
-      joinDate: "2023-03-10"
+      joinDate: "2023-03-10",
     },
     {
       id: "emp_003",
-      name: "Noah Carter", 
+      name: "Noah Carter",
       assignedQueries: 20,
       resolvedQueries: 18,
       pendingQueries: 2,
       status: "Active",
       department: "Public Services",
-      joinDate: "2023-02-20"
+      joinDate: "2023-02-20",
     },
     {
       id: "emp_004",
@@ -79,7 +79,7 @@ export const mockDepartmentData: DepartmentDashboardData = {
       pendingQueries: 3,
       status: "Active",
       department: "Public Services",
-      joinDate: "2023-04-05"
+      joinDate: "2023-04-05",
     },
     {
       id: "emp_005",
@@ -89,10 +89,10 @@ export const mockDepartmentData: DepartmentDashboardData = {
       pendingQueries: 5,
       status: "Active",
       department: "Public Services",
-      joinDate: "2023-01-30"
-    }
+      joinDate: "2023-01-30",
+    },
   ],
-  lastUpdated: new Date().toISOString()
+  lastUpdated: new Date().toISOString(),
 };
 
 // Future: Additional dashboard data types for MLA and Normal User roles
@@ -101,15 +101,16 @@ export interface MLADashboardData {
 }
 
 export interface UserDashboardData {
-  // To be defined when converting User dashboard  
+  // To be defined when converting User dashboard
 }
 
 // Data fetching functions (mock for now, will be replaced with API calls)
-export const fetchDepartmentDashboardData = async (): Promise<DepartmentDashboardData> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return mockDepartmentData;
-};
+export const fetchDepartmentDashboardData =
+  async (): Promise<DepartmentDashboardData> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return mockDepartmentData;
+  };
 
 export const fetchMLADashboardData = async (): Promise<MLADashboardData> => {
   // To be implemented
@@ -117,6 +118,6 @@ export const fetchMLADashboardData = async (): Promise<MLADashboardData> => {
 };
 
 export const fetchUserDashboardData = async (): Promise<UserDashboardData> => {
-  // To be implemented  
+  // To be implemented
   throw new Error("User dashboard data not yet implemented");
 };

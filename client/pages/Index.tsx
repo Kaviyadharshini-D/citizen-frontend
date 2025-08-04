@@ -9,16 +9,20 @@ import { AIAlerts } from "../components/AIAlerts";
 import { DepartmentDashboard } from "../components/DepartmentDashboard";
 import { UserDashboard } from "../components/UserDashboard";
 import { useUser } from "../context/UserContext";
-import { fetchDepartmentDashboardData, DepartmentDashboardData } from "../data/dashboardData";
+import {
+  fetchDepartmentDashboardData,
+  DepartmentDashboardData,
+} from "../data/dashboardData";
 
 export default function Index() {
   const { user } = useUser();
-  const [departmentData, setDepartmentData] = useState<DepartmentDashboardData | null>(null);
+  const [departmentData, setDepartmentData] =
+    useState<DepartmentDashboardData | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Fetch department dashboard data when user role is Department
   useEffect(() => {
-    if (user.role === 'Department') {
+    if (user.role === "Department") {
       setLoading(true);
       fetchDepartmentDashboardData()
         .then(setDepartmentData)
@@ -30,12 +34,12 @@ export default function Index() {
   return (
     <Layout>
       <div className="bg-dashboard-bg min-h-screen">
-        {user.role === 'Department' ? (
-          <DepartmentDashboard 
-            data={departmentData!} 
-            loading={loading || !departmentData} 
+        {user.role === "Department" ? (
+          <DepartmentDashboard
+            data={departmentData!}
+            loading={loading || !departmentData}
           />
-        ) : user.role === 'Normal User' ? (
+        ) : user.role === "Normal User" ? (
           <UserDashboard />
         ) : (
           <div className="max-w-[960px] mx-auto px-4 lg:px-0">

@@ -1,12 +1,15 @@
-import React from 'react';
-import { DepartmentDashboardData, Employee } from '../data/dashboardData';
+import React from "react";
+import { DepartmentDashboardData, Employee } from "../data/dashboardData";
 
 interface DepartmentDashboardProps {
   data: DepartmentDashboardData;
   loading?: boolean;
 }
 
-export function DepartmentDashboard({ data, loading = false }: DepartmentDashboardProps) {
+export function DepartmentDashboard({
+  data,
+  loading = false,
+}: DepartmentDashboardProps) {
   if (loading) {
     return (
       <div className="max-w-[960px] mx-auto px-4 lg:px-0 py-4">
@@ -112,7 +115,10 @@ export function DepartmentDashboard({ data, loading = false }: DepartmentDashboa
             </thead>
             <tbody>
               {employees.map((employee, index) => (
-                <tr key={employee.id} className={index > 0 ? "border-t border-gray-200" : ""}>
+                <tr
+                  key={employee.id}
+                  className={index > 0 ? "border-t border-gray-200" : ""}
+                >
                   <td className="p-4 text-sm text-gray-900 font-['Plus_Jakarta_Sans']">
                     {employee.name}
                   </td>
@@ -126,11 +132,13 @@ export function DepartmentDashboard({ data, loading = false }: DepartmentDashboa
                     {employee.pendingQueries}
                   </td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center px-4 py-1 rounded-xl text-sm font-medium font-['Plus_Jakarta_Sans'] ${
-                      employee.status === 'Active' 
-                        ? 'bg-green-100 text-green-900' 
-                        : 'bg-gray-100 text-gray-900'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-4 py-1 rounded-xl text-sm font-medium font-['Plus_Jakarta_Sans'] ${
+                        employee.status === "Active"
+                          ? "bg-green-100 text-green-900"
+                          : "bg-gray-100 text-gray-900"
+                      }`}
+                    >
                       {employee.status}
                     </span>
                   </td>
@@ -143,34 +151,45 @@ export function DepartmentDashboard({ data, loading = false }: DepartmentDashboa
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4 p-4">
           {employees.map((employee) => (
-            <div key={employee.id} className="bg-white rounded-lg p-4 border border-gray-200">
+            <div
+              key={employee.id}
+              className="bg-white rounded-lg p-4 border border-gray-200"
+            >
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
                   {employee.name}
                 </h3>
-                <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-medium font-['Plus_Jakarta_Sans'] ${
-                  employee.status === 'Active' 
-                    ? 'bg-green-100 text-green-900' 
-                    : 'bg-gray-100 text-gray-900'
-                }`}>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-medium font-['Plus_Jakarta_Sans'] ${
+                    employee.status === "Active"
+                      ? "bg-green-100 text-green-900"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
+                >
                   {employee.status}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <div className="text-gray-500 font-['Plus_Jakarta_Sans']">Assigned</div>
+                  <div className="text-gray-500 font-['Plus_Jakarta_Sans']">
+                    Assigned
+                  </div>
                   <div className="font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
                     {employee.assignedQueries}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-500 font-['Plus_Jakarta_Sans']">Resolved</div>
+                  <div className="text-gray-500 font-['Plus_Jakarta_Sans']">
+                    Resolved
+                  </div>
                   <div className="font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
                     {employee.resolvedQueries}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-500 font-['Plus_Jakarta_Sans']">Pending</div>
+                  <div className="text-gray-500 font-['Plus_Jakarta_Sans']">
+                    Pending
+                  </div>
                   <div className="font-medium text-gray-900 font-['Plus_Jakarta_Sans']">
                     {employee.pendingQueries}
                   </div>
@@ -180,7 +199,7 @@ export function DepartmentDashboard({ data, loading = false }: DepartmentDashboa
           ))}
         </div>
       </div>
-      
+
       {/* Data freshness indicator */}
       <div className="mt-4 text-xs text-gray-400 text-center font-['Plus_Jakarta_Sans']">
         Last updated: {new Date(data.lastUpdated).toLocaleString()}
