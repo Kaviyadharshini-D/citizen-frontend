@@ -1,256 +1,714 @@
-import React, { useState } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import React, { useState } from "react";
+import { useCreateIssue, useConstituencyIssues } from "../hooks/useApi";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus,
+  Upload,
+  X,
+  MapPin,
+  Calendar,
+  ThumbsUp,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+  Filter,
+  Send,
+  FileText,
+  Image as ImageIcon,
+} from "lucide-react";
 
-interface Issue {
-  panchayat: string;
-  category: string;
+interface FormData {
   title: string;
   description: string;
-  image: string;
+  location: string;
 }
 
-const issues: Issue[] = [
-  {
-    panchayat: "Village A",
-    category: "Road Repair",
-    title: "Road in Village A is in poor condition",
-    description: "The main road in Village A has deteriorated significantly, causing inconvenience and safety hazards for residents. Immediate repair is needed.",
-    image: "https://api.builder.io/api/v1/image/assets/TEMP/510ae645d15994b3c8199360ae459549d01973b3?width=618"
-  },
-  {
-    panchayat: "Village B",
-    category: "Water Supply",
-    title: "Water supply issues in Village B",
-    description: "Residents of Village B are facing irregular and insufficient water supply. This issue needs urgent attention to ensure access to clean water.",
-    image: "https://api.builder.io/api/v1/image/assets/TEMP/6320aecb7609d461f4057ee574d51dfa1c9a9be7?width=618"
-  },
-  {
-    panchayat: "Village C",
-    category: "Street Lights",
-    title: "Non-functional street lights in Village C",
-    description: "Many street lights in Village C are not working, leading to safety concerns during the night. Repair or replacement of these lights is required.",
-    image: "https://api.builder.io/api/v1/image/assets/TEMP/8195657ae6f553957ca1962ee7904a3be5f21dfa?width=618"
-  }
-];
-
-export function UserDashboard() {
-  const [selectedPanchayat, setSelectedPanchayat] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [issueDescription, setIssueDescription] = useState('');
+export default function UserDashboard() {
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    description: "",
+    location: "",
+  });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [submitAnonymously, setSubmitAnonymously] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<
+    "latest" | "upvotes" | "category"
+  >("latest");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
+  // Get user's constituency name for display
+  const getUserConstituency = () => {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      try {
+        const apiUser = JSON.parse(userData);
+        return apiUser.constituency_name || "Your Constituency";
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        return "Your Constituency";
+      }
+    }
+    return "Your Constituency";
+  };
+
+  const userConstituency = getUserConstituency();
+
+  // Get constituency ID for API call
+  const getConstituencyId = () => {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      try {
+        const apiUser = JSON.parse(userData);
+        return apiUser.constituency_id || "";
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        return "";
+      }
+    }
+    return "";
+  };
+
+  const constituencyId = getConstituencyId();
+
+  // Create issue mutation
+  const createIssueMutation = useCreateIssue();
+
+  // Fetch constituency issues
+  const { data: constituencyIssuesData, isLoading: issuesLoading } =
+    useConstituencyIssues(constituencyId);
+
+  // Get issues from API response
+  const allIssues =
+    constituencyIssuesData?.issues?.issues ||
+    constituencyIssuesData?.issues ||
+    [];
+
+  // Ensure allIssues is always an array
+  const safeAllIssues = Array.isArray(allIssues) ? allIssues : [];
+
+  // Filter and sort issues based on active filter
+  const getFilteredIssues = () => {
+    let filteredIssues = [...safeAllIssues];
+
+    // Apply category filter if selected
+    if (activeFilter === "category" && selectedCategory) {
+      filteredIssues = filteredIssues.filter(
+        (issue) =>
+          issue.detail
+            ?.toLowerCase()
+            .includes(selectedCategory.toLowerCase()) ||
+          issue.title?.toLowerCase().includes(selectedCategory.toLowerCase()),
+      );
+    }
+
+    // Apply sorting based on filter
+    switch (activeFilter) {
+      case "latest":
+        filteredIssues.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+        break;
+      case "upvotes":
+        filteredIssues.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
+        break;
+      case "category":
+        // Already filtered by category, sort by latest
+        filteredIssues.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+        break;
+    }
+
+    return filteredIssues;
+  };
+
+  const filteredIssues = getFilteredIssues();
+
+  // Handle form input changes
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(
+      (file) =>
+        file.type.startsWith("image/") ||
+        file.type === "application/pdf" ||
+        file.size <= 5 * 1024 * 1024, // 5MB limit
+    );
+
+    if (validFiles.length !== files.length) {
+      toast.error("Please select only images or PDFs under 5MB");
+    }
+
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
+  };
+
+  // Remove selected file
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Validate form
+  const validateForm = () => {
+    if (!formData.title.trim()) {
+      toast.error("Please enter a title for your issue");
+      return false;
+    }
+    if (formData.title.length < 5) {
+      toast.error("Title must be at least 5 characters long");
+      return false;
+    }
+    if (formData.title.length > 200) {
+      toast.error("Title must be less than 200 characters");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      toast.error("Please describe your issue");
+      return false;
+    }
+    if (formData.description.length < 10) {
+      toast.error("Description must be at least 10 characters long");
+      return false;
+    }
+    if (formData.description.length > 2000) {
+      toast.error("Description must be less than 2000 characters");
+      return false;
+    }
+    if (!formData.location.trim()) {
+      toast.error("Please specify the location");
+      return false;
+    }
+    if (formData.location.length < 3) {
+      toast.error("Location must be at least 3 characters long");
+      return false;
+    }
+    if (formData.location.length > 200) {
+      toast.error("Location must be less than 200 characters");
+      return false;
+    }
+    return true;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Create FormData for file upload with correct field names matching backend schema
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("detail", formData.description); // Backend expects 'detail'
+      formDataToSend.append("locality", formData.location); // Backend expects 'locality'
+      formDataToSend.append("is_anonymous", submitAnonymously.toString()); // Backend expects 'is_anonymous'
+
+      // Add files as attachments (optional)
+      selectedFiles.forEach((file, index) => {
+        formDataToSend.append(`attachments`, file); // Backend expects 'attachments'
+      });
+
+      await createIssueMutation.mutateAsync(formDataToSend);
+
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        location: "",
+      });
+      setSelectedFiles([]);
+      setSubmitAnonymously(false);
+
+      toast.success(
+        "Issue submitted successfully! Your issue has been submitted and is under review.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Please try again");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle filter change
+  const handleFilterChange = (filter: "latest" | "upvotes" | "category") => {
+    setActiveFilter(filter);
+    if (filter !== "category") {
+      setSelectedCategory("");
+    }
+  };
+
+  // Handle category selection
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setActiveFilter("category");
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const baseClasses =
+      "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200";
+
+    let bgColor = "bg-slate-100";
+    let textColor = "text-slate-700";
+    let borderColor = "border-slate-200";
+
+    switch (status?.toLowerCase()) {
+      case "resolved":
+        bgColor = "bg-emerald-50";
+        textColor = "text-emerald-700";
+        borderColor = "border-emerald-200";
+        break;
+      case "in_progress":
+        bgColor = "bg-blue-50";
+        textColor = "text-blue-700";
+        borderColor = "border-blue-200";
+        break;
+      case "pending":
+        bgColor = "bg-amber-50";
+        textColor = "text-amber-700";
+        borderColor = "border-amber-200";
+        break;
+      case "rejected":
+        bgColor = "bg-red-50";
+        textColor = "text-red-700";
+        borderColor = "border-red-200";
+        break;
+      default:
+        bgColor = "bg-slate-50";
+        textColor = "text-slate-700";
+        borderColor = "border-slate-200";
+    }
+
+    return (
+      <div
+        className={`${baseClasses} ${bgColor} ${textColor} ${borderColor} border`}
+      >
+        {status?.replace("_", " ").toUpperCase() || "PENDING"}
+      </div>
+    );
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.2,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const filterButtonVariants = {
+    inactive: { scale: 1 },
+    active: { scale: 1.05 },
+  };
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 lg:px-0 py-4">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 px-4">
-        <div className="bg-gray-100 rounded-lg p-6">
-          <div className="mb-2">
-            <h3 className="text-base font-medium text-gray-900 font-jakarta">
-              Total Queries
-            </h3>
-          </div>
-          <div className="text-2xl font-bold text-gray-900 font-jakarta">
-            1,234
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
+          <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4">
+            Community Dashboard
+          </h1>
+        </motion.div>
 
-        <div className="bg-gray-100 rounded-lg p-6">
-          <div className="mb-2">
-            <h3 className="text-base font-medium text-gray-900 font-jakarta">
-              Completed
-            </h3>
-          </div>
-          <div className="text-2xl font-bold text-gray-900 font-jakarta">
-            876
-          </div>
-        </div>
-
-        <div className="bg-gray-100 rounded-lg p-6">
-          <div className="mb-2">
-            <h3 className="text-base font-medium text-gray-900 font-jakarta">
-              Ongoing
-            </h3>
-          </div>
-          <div className="text-2xl font-bold text-gray-900 font-jakarta">
-            358
-          </div>
-        </div>
-      </div>
-
-      {/* Post a New Query Section */}
-      <div className="mb-8">
-        <div className="px-4 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 font-jakarta">
-            Post a New Query
-          </h2>
-        </div>
-
-        <div className="space-y-4 px-4">
-          {/* Panchayat Selector */}
-          <div className="relative">
-            <select
-              value={selectedPanchayat}
-              onChange={(e) => setSelectedPanchayat(e.target.value)}
-              className="w-full px-6 py-3 bg-gray-50 border border-gray-300 rounded-lg text-base font-jakarta text-gray-900 appearance-none cursor-pointer"
-            >
-              <option value="">Select Panchayat</option>
-              <option value="village-a">Village A</option>
-              <option value="village-b">Village B</option>
-              <option value="village-c">Village C</option>
-            </select>
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <div className="flex flex-col space-y-1">
-                <ChevronUp size={8} className="text-blue-600" />
-                <ChevronDown size={8} className="text-blue-600" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Issue Submission Form */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  Report an Issue
+                </h2>
+                <p className="text-slate-600">Help improve your community</p>
               </div>
             </div>
-          </div>
 
-          {/* Category Selector */}
-          <div className="relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-6 py-3 bg-gray-50 border border-gray-300 rounded-lg text-base font-jakarta text-gray-900 appearance-none cursor-pointer"
-            >
-              <option value="">Select Category</option>
-              <option value="road-repair">Road Repair</option>
-              <option value="water-supply">Water Supply</option>
-              <option value="street-lights">Street Lights</option>
-              <option value="sanitation">Sanitation</option>
-              <option value="electricity">Electricity</option>
-            </select>
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <div className="flex flex-col space-y-1">
-                <ChevronUp size={8} className="text-blue-600" />
-                <ChevronDown size={8} className="text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          {/* Issue Description */}
-          <div>
-            <textarea
-              value={issueDescription}
-              onChange={(e) => setIssueDescription(e.target.value)}
-              placeholder="Describe your Issue here"
-              rows={6}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-base font-jakarta placeholder-blue-300 resize-none"
-            />
-          </div>
-
-          {/* File Upload Area */}
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-14 text-center">
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-gray-900 font-jakarta">
-                Attach Media (Optional)
-              </h3>
-              <p className="text-sm text-gray-900 font-jakarta">
-                Drag and drop or click to upload
-              </p>
-            </div>
-          </div>
-
-          {/* Submit Anonymously Checkbox */}
-          <div className="flex items-center gap-3 px-4">
-            <div className="relative">
-              <input
-                type="checkbox"
-                id="submit-anonymously"
-                checked={submitAnonymously}
-                onChange={(e) => setSubmitAnonymously(e.target.checked)}
-                className="sr-only"
-              />
-              <label
-                htmlFor="submit-anonymously"
-                className="flex items-center cursor-pointer"
-              >
-                <div className={`w-5 h-5 border-2 rounded ${submitAnonymously ? 'border-blue-500 bg-blue-500' : 'border-blue-500 bg-gray-50'} flex items-center justify-center`}>
-                  {submitAnonymously && (
-                    <svg width="12" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" clipRule="evenodd" d="M11.4605 1.99125C11.9485 2.47937 11.9485 3.27063 11.4605 3.75875L5.21053 10.0087C4.72241 10.4967 3.93116 10.4967 3.44303 10.0087L0.943033 7.50875C0.469314 7.01832 0.476093 6.23859 0.958259 5.75648C1.44043 5.27431 2.22006 5.26754 2.71053 5.74125L4.32697 7.3575L9.69322 1.99125C10.1813 1.50327 10.9725 1.50327 11.4605 1.99125Z" fill="white"/>
-                    </svg>
-                  )}
-                </div>
-                <span className="ml-3 text-base text-gray-900 font-jakarta">
-                  Submit Anonymously
-                </span>
-              </label>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-end px-4">
-            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold font-jakarta">
-              Submit
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Issue Feed Section */}
-      <div className="mb-6 px-4">
-        <h2 className="text-xl font-bold text-gray-900 font-jakarta">
-          Issue Feed
-        </h2>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="px-4 mb-6">
-        <div className="flex flex-wrap gap-3">
-          <button className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium font-jakarta">
-            Latest
-          </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium font-jakarta">
-            Most Upvoted
-          </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium font-jakarta">
-            By Category
-          </button>
-        </div>
-      </div>
-
-      {/* Issue Feed */}
-      <div className="space-y-4 px-4">
-        {issues.map((issue, index) => (
-          <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
-            <div className="flex justify-between items-start gap-4">
-              {/* Content */}
-              <div className="flex-1 space-y-4">
-                <div className="space-y-1">
-                  <div className="text-sm text-blue-600 font-jakarta">
-                    Panchayat: {issue.panchayat} | Category: {issue.category}
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 font-jakarta leading-tight">
-                    {issue.title}
-                  </h3>
-                  <p className="text-sm text-blue-600 font-jakarta leading-relaxed">
-                    {issue.description}
-                  </p>
-                </div>
-                
-                {/* Upvote Button */}
-                <div className="inline-flex items-center px-4 py-1 bg-gray-100 rounded-lg gap-1">
-                  <span className="text-sm font-medium text-gray-900 font-jakarta">
-                    Upvote
-                  </span>
-                  <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M11.4605 6.27297C11.355 6.37859 11.2118 6.43794 11.0625 6.43794C10.9132 6.43794 10.77 6.37859 10.6645 6.27297L6.5625 2.17023V13.1875C6.5625 13.4982 6.31066 13.75 6 13.75C5.68934 13.75 5.4375 13.4982 5.4375 13.1875V2.17023L1.33547 6.27297C1.11568 6.49276 0.759323 6.49276 0.539531 6.27297C0.319739 6.05318 0.319739 5.69682 0.539531 5.47703L5.60203 0.414531C5.70754 0.308907 5.85071 0.249557 6 0.249557C6.14929 0.249557 6.29246 0.308907 6.39797 0.414531L11.4605 5.47703C11.5661 5.58254 11.6254 5.72571 11.6254 5.875C11.6254 6.02429 11.5661 6.16746 11.4605 6.27297Z" fill="#0D141C"/>
-                  </svg>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Issue Title *
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Brief description of the issue..."
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  maxLength={200}
+                />
+                <div className="text-xs text-slate-500 mt-1">
+                  {formData.title.length}/200 characters
                 </div>
               </div>
 
-              {/* Image */}
-              <div className="flex-shrink-0">
-                <img
-                  src={issue.image}
-                  alt={issue.title}
-                  className="w-32 h-32 object-cover rounded-lg"
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Detailed Description *
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Provide detailed information about the issue..."
+                  rows={4}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                  maxLength={2000}
+                />
+                <div className="text-xs text-slate-500 mt-1">
+                  {formData.description.length}/2000 characters
+                </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Location *
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  placeholder="Specific location or address..."
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  maxLength={200}
                 />
               </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Attachments (Optional)
+                </label>
+                <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors duration-200">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="w-8 h-8 text-slate-400" />
+                      <span className="text-slate-600 font-medium">
+                        Click to upload files
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        Images or PDFs, max 5MB each
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Selected Files */}
+                {selectedFiles.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-slate-50 rounded-lg p-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          {file.type.startsWith("image/") ? (
+                            <ImageIcon className="w-4 h-4 text-blue-500" />
+                          ) : (
+                            <FileText className="w-4 h-4 text-blue-500" />
+                          )}
+                          <span className="text-sm font-medium text-slate-700">
+                            {file.name}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Anonymous Submission */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="anonymous"
+                  checked={submitAnonymously}
+                  onChange={(e) => setSubmitAnonymously(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="anonymous" className="text-sm text-slate-700">
+                  Submit anonymously
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Submit Issue
+                  </>
+                )}
+              </motion.button>
+            </form>
+          </motion.div>
+
+          {/* Issue Feed */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  Community Issues
+                </h2>
+                <p className="text-slate-600">
+                  {filteredIssues.length} issue
+                  {filteredIssues.length !== 1 ? "s" : ""} in {userConstituency}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap gap-3 mb-6">
+              <motion.button
+                variants={filterButtonVariants}
+                whileHover="active"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleFilterChange("latest")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  activeFilter === "latest"
+                    ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                Latest
+              </motion.button>
+              <motion.button
+                variants={filterButtonVariants}
+                whileHover="active"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleFilterChange("upvotes")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  activeFilter === "upvotes"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                Most Popular
+              </motion.button>
+              <motion.button
+                variants={filterButtonVariants}
+                whileHover="active"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleFilterChange("category")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  activeFilter === "category"
+                    ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                By Category
+              </motion.button>
+            </div>
+
+            {/* Category Filter Dropdown */}
+            <AnimatePresence>
+              {activeFilter === "category" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden mb-6"
+                >
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="">Select a category...</option>
+                    <option value="road">🚧 Road Issues</option>
+                    <option value="water">💧 Water Supply</option>
+                    <option value="electricity">⚡ Electricity</option>
+                    <option value="sanitation">🧹 Sanitation</option>
+                    <option value="healthcare">🏥 Healthcare</option>
+                    <option value="education">📚 Education</option>
+                    <option value="transportation">🚌 Transportation</option>
+                  </select>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Issues List */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4 h-full overflow-y-auto"
+            >
+              {issuesLoading ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-8"
+                >
+                  <div className="inline-flex items-center gap-3 text-slate-600">
+                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-medium">Loading issues...</span>
+                  </div>
+                </motion.div>
+              ) : filteredIssues.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-8"
+                >
+                  <div className="text-slate-500">
+                    <div className="text-4xl mb-2">📭</div>
+                    <h3 className="font-semibold mb-1">
+                      {activeFilter === "category" && selectedCategory
+                        ? `No issues found for "${selectedCategory}"`
+                        : "No issues found"}
+                    </h3>
+                    <p className="text-sm text-slate-400">
+                      {activeFilter === "category" && selectedCategory
+                        ? "Try selecting a different category"
+                        : "Be the first to report an issue!"}
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                filteredIssues.map((issue, index) => (
+                  <motion.div
+                    key={issue._id || index}
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                    className="bg-slate-50 rounded-xl p-4 hover:bg-slate-100 transition-all duration-200 border border-slate-200"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(issue.status)}
+                          <div className="flex items-center gap-1 text-slate-500">
+                            <Calendar className="w-3 h-3" />
+                            <span className="text-xs font-medium">
+                              {formatDate(issue.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-emerald-600">
+                          <ThumbsUp className="w-3 h-3" />
+                          <span className="text-xs font-semibold">
+                            {issue.upvotes || 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h3 className="font-semibold text-slate-800 leading-tight">
+                        {issue.title}
+                      </h3>
+
+                      <p className="text-sm text-slate-600 line-clamp-2">
+                        {issue.detail}
+                      </p>
+
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <MapPin className="w-3 h-3" />
+                        <span className="text-xs font-medium">
+                          {issue.locality || "Location not specified"}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
