@@ -229,6 +229,10 @@ export default function Signup() {
         (p) => p.name === formData.panchayat,
       );
 
+      const selectedWard = selectedPanchayat?.ward_list?.find(
+        (w) => w.ward_name === formData.ward,
+      );
+
       if (!selectedConstituency || !selectedPanchayat) {
         setError("Please select valid constituency and panchayat");
         return;
@@ -242,8 +246,10 @@ export default function Signup() {
         phone_number: formData.phone,
         constituency_id: selectedConstituency.id,
         panchayat_id: selectedPanchayat._id,
-        ward_no: formData.ward,
+        ward_no: selectedWard?._id,
       };
+
+      console.log(signupData);
 
       await signupMutation.mutateAsync(signupData);
     } catch (err) {

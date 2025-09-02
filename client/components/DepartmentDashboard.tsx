@@ -11,6 +11,23 @@ import {
   AlertCircle,
   Target,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface DepartmentDashboardProps {
   data: DepartmentDashboardData;
@@ -21,6 +38,61 @@ export function DepartmentDashboard({
   data,
   loading = false,
 }: DepartmentDashboardProps) {
+  type QueryStatus = "Pending" | "In Progress" | "Resolved";
+  type QueryPriority = "High" | "Medium" | "Low";
+  type DepartmentQuery = {
+    id: string;
+    title: string;
+    priority: QueryPriority;
+    status: QueryStatus;
+    assignedTo?: string | null;
+  };
+
+  const [queries, setQueries] = React.useState<DepartmentQuery[]>([
+    {
+      id: "Q-101",
+      title: "Transformer maintenance at Ward 3",
+      priority: "High",
+      status: "Pending",
+      assignedTo: null,
+    },
+    {
+      id: "Q-102",
+      title: "New connection request backlog",
+      priority: "Medium",
+      status: "In Progress",
+      assignedTo: "Olivia Bennett",
+    },
+    {
+      id: "Q-103",
+      title: "Street light outage - Block B",
+      priority: "High",
+      status: "Pending",
+      assignedTo: null,
+    },
+    {
+      id: "Q-104",
+      title: "Meter reading discrepancies",
+      priority: "Low",
+      status: "In Progress",
+      assignedTo: "Ethan Harper",
+    },
+    {
+      id: "Q-105",
+      title: "Substation cooling issue",
+      priority: "High",
+      status: "Resolved",
+      assignedTo: "Noah Carter",
+    },
+  ]);
+
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [editingQueryId, setEditingQueryId] = React.useState<string | null>(
+    null,
+  );
+  const [selectedEmployeeId, setSelectedEmployeeId] =
+    React.useState<string>("");
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -160,200 +232,192 @@ export function DepartmentDashboard({
           </div>
         </motion.div>
 
-        {/* Employee Query Assignments Section */}
-        <motion.div /*variants={itemVariants}*/ className="mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
+        {/* Unresolved Queries (Pending + In Progress) */}
+        <motion.div /*variants={itemVariants}*/ className="mt-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
-              Employee Query Assignments
-            </h2>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+              Unresolved Queries
+            </h3>
           </div>
-        </motion.div>
-
-        {/* Table */}
-        <motion.div /*variants={itemVariants}*/>
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
-            {/* Desktop Table View */}
-            <div className="hidden md:block">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-slate-700">
-                    <tr>
-                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors duration-300">
-                        Employee
-                      </th>
-                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors duration-300">
-                        Assigned Queries
-                      </th>
-                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors duration-300">
-                        Resolved Queries
-                      </th>
-                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors duration-300">
-                        Pending Queries
-                      </th>
-                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors duration-300">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((employee, index) => (
-                      <motion.tr
-                        key={employee.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`${
-                          index > 0
-                            ? "border-t border-slate-200 dark:border-slate-700"
-                            : ""
-                        } hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200`}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 dark:bg-slate-700">
+                  <tr>
+                    <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      ID
+                    </th>
+                    <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Title
+                    </th>
+                    <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Priority
+                    </th>
+                    <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Status
+                    </th>
+                    <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Assigned To
+                    </th>
+                    <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {queries
+                    .filter(
+                      (q) =>
+                        q.status === "Pending" || q.status === "In Progress",
+                    )
+                    .sort((a, b) => {
+                      // Pending first, then In Progress
+                      const order = {
+                        Pending: 0,
+                        "In Progress": 1,
+                        Resolved: 2,
+                      } as const;
+                      if (order[a.status] !== order[b.status]) {
+                        return order[a.status] - order[b.status];
+                      }
+                      // Within same status, sort by priority High > Medium > Low
+                      const pOrder = { High: 0, Medium: 1, Low: 2 } as const;
+                      return pOrder[a.priority] - pOrder[b.priority];
+                    })
+                    .map((q) => (
+                      <tr
+                        key={q.id}
+                        className="border-t border-slate-200 dark:border-slate-700"
                       >
-                        <td className="p-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 rounded-xl flex items-center justify-center">
-                              <UserCheck className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                            </div>
-                            <div>
-                              <div className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
-                                {employee.name}
-                              </div>
-                              <div className="text-sm text-slate-500 dark:text-slate-400 transition-colors duration-300">
-                                Employee #{employee.id}
-                              </div>
-                            </div>
-                          </div>
+                        <td className="p-6 text-slate-800 dark:text-slate-200">
+                          {q.id}
+                        </td>
+                        <td className="p-6 text-slate-800 dark:text-slate-200">
+                          {q.title}
                         </td>
                         <td className="p-6">
-                          <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4 text-blue-500" />
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
-                              {employee.assignedQueries}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-6">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-emerald-500" />
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
-                              {employee.resolvedQueries}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-6">
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-orange-500" />
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
-                              {employee.pendingQueries}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-6">
-                          <span
-                            className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                              employee.status === "Active"
-                                ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                                : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600"
-                            }`}
+                          <Badge
+                            className={
+                              q.priority === "High"
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                : q.priority === "Medium"
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                                  : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
+                            }
                           >
-                            <div
-                              className={`w-2 h-2 rounded-full mr-2 ${
-                                employee.status === "Active"
-                                  ? "bg-emerald-500"
-                                  : "bg-slate-400"
-                              }`}
-                            />
-                            {employee.status}
-                          </span>
+                            {q.priority}
+                          </Badge>
                         </td>
-                      </motion.tr>
+                        <td className="p-6">
+                          <Badge
+                            className={
+                              q.status === "Pending"
+                                ? "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                                : q.status === "In Progress"
+                                  ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                            }
+                          >
+                            {q.status}
+                          </Badge>
+                        </td>
+                        <td className="p-6 text-slate-700 dark:text-slate-300">
+                          {q.assignedTo || "—"}
+                        </td>
+                        <td className="p-6">
+                          {q.status === "Pending" ? (
+                            <Dialog
+                              open={editOpen && editingQueryId === q.id}
+                              onOpenChange={(o) => {
+                                if (!o) {
+                                  setEditOpen(false);
+                                  setEditingQueryId(null);
+                                }
+                              }}
+                            >
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingQueryId(q.id);
+                                    setSelectedEmployeeId("");
+                                    setEditOpen(true);
+                                  }}
+                                >
+                                  Assign
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Assign Employee</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <div className="text-sm mb-2">
+                                      Select employee
+                                    </div>
+                                    <Select
+                                      value={selectedEmployeeId}
+                                      onValueChange={setSelectedEmployeeId}
+                                    >
+                                      <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Choose employee" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {data.employees.map((e) => (
+                                          <SelectItem key={e.id} value={e.id}>
+                                            {e.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button
+                                    onClick={() => {
+                                      if (
+                                        !editingQueryId ||
+                                        !selectedEmployeeId
+                                      )
+                                        return;
+                                      const employee = data.employees.find(
+                                        (e) => e.id === selectedEmployeeId,
+                                      );
+                                      setQueries((prev) =>
+                                        prev.map((x) =>
+                                          x.id === editingQueryId
+                                            ? {
+                                                ...x,
+                                                assignedTo: employee
+                                                  ? employee.name
+                                                  : x.assignedTo,
+                                                status: "In Progress",
+                                              }
+                                            : x,
+                                        ),
+                                      );
+                                      setEditOpen(false);
+                                      setEditingQueryId(null);
+                                    }}
+                                    disabled={!selectedEmployeeId}
+                                  >
+                                    Save
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                      </tr>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="md:hidden p-6 space-y-4">
-              {employees.map((employee, index) => (
-                <motion.div
-                  key={employee.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 border border-slate-200 dark:border-slate-600 transition-all duration-300"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 rounded-xl flex items-center justify-center">
-                        <UserCheck className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
-                          {employee.name}
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 transition-colors duration-300">
-                          Employee #{employee.id}
-                        </p>
-                      </div>
-                    </div>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                        employee.status === "Active"
-                          ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                          : "bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-500"
-                      }`}
-                    >
-                      <div
-                        className={`w-2 h-2 rounded-full mr-2 ${
-                          employee.status === "Active"
-                            ? "bg-emerald-500"
-                            : "bg-slate-400"
-                        }`}
-                      />
-                      {employee.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Target className="w-4 h-4 text-blue-500" />
-                        <span className="text-slate-500 dark:text-slate-400 text-sm transition-colors duration-300">
-                          Assigned
-                        </span>
-                      </div>
-                      <div className="font-bold text-slate-800 dark:text-slate-200 text-lg transition-colors duration-300">
-                        {employee.assignedQueries}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                        <span className="text-slate-500 dark:text-slate-400 text-sm transition-colors duration-300">
-                          Resolved
-                        </span>
-                      </div>
-                      <div className="font-bold text-slate-800 dark:text-slate-200 text-lg transition-colors duration-300">
-                        {employee.resolvedQueries}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Clock className="w-4 h-4 text-orange-500" />
-                        <span className="text-slate-500 dark:text-slate-400 text-sm transition-colors duration-300">
-                          Pending
-                        </span>
-                      </div>
-                      <div className="font-bold text-slate-800 dark:text-slate-200 text-lg transition-colors duration-300">
-                        {employee.pendingQueries}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </motion.div>

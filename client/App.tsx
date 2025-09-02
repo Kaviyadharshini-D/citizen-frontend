@@ -2,9 +2,8 @@ import "./global.css";
 
 import React from "react";
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
+  createBrowserRouter,
+  RouterProvider,
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -33,105 +32,89 @@ const queryClient = new QueryClient({
   },
 });
 
+// Define routes using Data Router API with v7 future flags
+const router = createBrowserRouter(
+  [
+    // Public routes
+    { path: "/login", element: <Login /> },
+    { path: "/signup", element: <Signup /> },
+
+    // Protected routes
+    {
+      path: "/",
+      element: (
+        <ProtectedRoute
+          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+        >
+          <Index />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/analytics",
+      element: (
+        <ProtectedRoute allowedRoles={["dept", "dept_staff"]}>
+          <Analytics />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/issues",
+      element: (
+        <ProtectedRoute
+          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+        >
+          <Issues />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/reports",
+      element: (
+        <ProtectedRoute
+          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+        >
+          <Reports />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/settings",
+      element: (
+        <ProtectedRoute
+          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+        >
+          <Settings />
+        </ProtectedRoute>
+      ),
+    },
+
+    // Redirects
+    { path: "/dashboard", element: <Navigate to="/" replace /> },
+
+    // 404
+    { path: "*", element: <NotFound /> },
+  ],
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
+  },
+);
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <UserProvider>
-          <Router>
-            <div className="App">
-              <Routes>
-                {/* Public routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-
-                {/* Protected routes */}
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute
-                      allowedRoles={[
-                        "dept",
-                        "dept_staff",
-                        "mlastaff",
-                        "citizen",
-                        "admin",
-                      ]}
-                    >
-                      <Index />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/analytics"
-                  element={
-                    <ProtectedRoute allowedRoles={["dept", "dept_staff"]}>
-                      <Analytics />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/issues"
-                  element={
-                    <ProtectedRoute
-                      allowedRoles={[
-                        "dept",
-                        "dept_staff",
-                        "mlastaff",
-                        "citizen",
-                        "admin",
-                      ]}
-                    >
-                      <Issues />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/reports"
-                  element={
-                    <ProtectedRoute
-                      allowedRoles={[
-                        "dept",
-                        "dept_staff",
-                        "mlastaff",
-                        "citizen",
-                        "admin",
-                      ]}
-                    >
-                      <Reports />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute
-                      allowedRoles={[
-                        "dept",
-                        "dept_staff",
-                        "mlastaff",
-                        "citizen",
-                        "admin",
-                      ]}
-                    >
-                      <Settings />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Redirects */}
-                <Route
-                  path="/dashboard"
-                  element={<Navigate to="/" replace />}
-                />
-
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-
-              <Toaster />
-            </div>
-          </Router>
+          <div className="App">
+            <RouterProvider
+              router={router}
+              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+            />
+            <Toaster />
+          </div>
         </UserProvider>
       </ThemeProvider>
     </QueryClientProvider>

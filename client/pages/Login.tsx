@@ -72,21 +72,7 @@ export default function Login() {
   };
 
   const redirectBasedOnRole = (role: string) => {
-    switch (role) {
-      case "mlastaff":
-        navigate("/analytics");
-        break;
-      case "dept":
-      case "dept_staff":
-        navigate("/");
-        break;
-      case "admin":
-        navigate("/"); // Admin has access to all pages
-        break;
-      default:
-        navigate("/issues");
-        break;
-    }
+    navigate("/");
   };
 
   const handleLogin = async (e: React.FormEvent) => {

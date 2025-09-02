@@ -20,6 +20,9 @@ import {
   Constituency,
   Panchayat,
   IssueStatistics,
+  MLADashboardResponse,
+  MLADashboardData,
+  MLADashboardStatsResponse,
 } from "../types/api";
 
 const API_BASE_URL = "http://localhost:3333/api";
@@ -46,6 +49,7 @@ class ApiService {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
+    timeout: number = 10000, // 10 second default timeout
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const config: RequestInit = {
@@ -53,7 +57,15 @@ class ApiService {
       ...options,
     };
     console.log(url);
-    const response = await fetch(url, config);
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Request timeout")), timeout);
+    });
+
+    // Race between fetch and timeout
+    const response = await Promise.race([fetch(url, config), timeoutPromise]);
+
     return this.handleResponse<T>(response);
   }
 
@@ -661,6 +673,57 @@ class ApiService {
   // Health check
   async healthCheck(): Promise<{ status: string; message: string }> {
     return this.request<{ status: string; message: string }>("/health");
+  }
+
+  // MLA Dashboard APIs
+  async getMLADashboard(constituencyId: string): Promise<MLADashboardResponse> {
+    try {
+      return await this.request<MLADashboardResponse>(
+        `/mla-dashboard/${constituencyId}`,
+        {},
+        5000, // 5 second timeout for dashboard data
+      );
+    } catch (error) {
+      console.warn("MLA Dashboard API failed, will use mock data:", error);
+      throw error;
+    }
+  }
+
+  async updateMLADashboard(
+    constituencyId: string,
+    data: Partial<MLADashboardData>,
+  ): Promise<MLADashboardResponse> {
+    try {
+      return await this.request<MLADashboardResponse>(
+        `/mla-dashboard/${constituencyId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        },
+        8000, // 8 second timeout for updates
+      );
+    } catch (error) {
+      console.warn("MLA Dashboard update failed:", error);
+      throw error;
+    }
+  }
+
+  async getMLADashboardStats(
+    constituencyId: string,
+  ): Promise<MLADashboardStatsResponse> {
+    try {
+      return await this.request<MLADashboardStatsResponse>(
+        `/mla-dashboard/${constituencyId}/stats`,
+        {},
+        5000, // 5 second timeout for stats
+      );
+    } catch (error) {
+      console.warn(
+        "MLA Dashboard stats API failed, will use mock data:",
+        error,
+      );
+      throw error;
+    }
   }
 }
 

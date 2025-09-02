@@ -16,6 +16,7 @@ import {
   UpdateUserDetailsRequest,
   User as ApiUser,
   RoleTypes,
+  MLADashboardData,
 } from "../types/api";
 import { UserRole } from "../types/auth";
 
@@ -499,6 +500,41 @@ export const usePanchayatsByConstituency = (constituencyName: string) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     retryDelay: 1000,
+  });
+};
+
+// MLA Dashboard Hooks
+export const useMLADashboard = (constituencyId: string) => {
+  return useQuery({
+    queryKey: ["mla-dashboard", constituencyId],
+    queryFn: () => apiService.getMLADashboard(constituencyId),
+    enabled: !!constituencyId,
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useMLADashboardStats = (constituencyId: string) => {
+  return useQuery({
+    queryKey: ["mla-dashboard-stats", constituencyId],
+    queryFn: () => apiService.getMLADashboardStats(constituencyId),
+    enabled: !!constituencyId,
+    retry: 3,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+export const useUpdateMLADashboard = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ constituencyId, data }: { constituencyId: string; data: Partial<MLADashboardData> }) =>
+      apiService.updateMLADashboard(constituencyId, data),
+    onSuccess: (_, { constituencyId }) => {
+      // Invalidate and refetch dashboard data
+      queryClient.invalidateQueries({ queryKey: ["mla-dashboard", constituencyId] });
+      queryClient.invalidateQueries({ queryKey: ["mla-dashboard-stats", constituencyId] });
+    },
   });
 };
 

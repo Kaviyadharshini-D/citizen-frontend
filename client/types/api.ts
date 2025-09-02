@@ -285,3 +285,93 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 }
+
+// MLA Dashboard Types
+export interface MLADashboardData {
+  _id: string;
+  constituency_id: string;
+  name: string;
+  total_voters: number;
+  active_voters: number;
+  total_panchayats: number;
+  total_wards: number;
+  area: string;
+  population: string;
+  literacy_rate: string;
+  total_issues: number;
+  resolved_issues: number;
+  pending_issues: number;
+  avg_response_time: number;
+  user_satisfaction: number;
+  efficiency: number;
+  maintenance_completed: number;
+  new_connections: number;
+  revenue: number;
+  cost_savings: number;
+  budget: number;
+  spent: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MLADashboardStats {
+  total_issues: number;
+  resolved_issues: number;
+  pending_issues: number;
+  critical_issues: number;
+  avg_resolution_time: number;
+  user_satisfaction: number;
+  efficiency: number;
+  monthly_trends: Array<{
+    month: string;
+    total: number;
+    resolved: number;
+    pending: number;
+    critical: number;
+    avg_resolution: number;
+    satisfaction: number;
+  }>;
+  category_breakdown: Array<{
+    name: string;
+    value: number;
+    color: string;
+    priority: string;
+    avg_resolution: number;
+  }>;
+  priority_distribution: Array<{
+    priority: string;
+    count: number;
+    color: string;
+  }>;
+  department_performance: Array<{
+    name: string;
+    issues: number;
+    resolved: number;
+    pending: number;
+    avg_response: number;
+    satisfaction: number;
+    budget: number;
+    spent: number;
+  }>;
+  recent_issues: Array<{
+    id: string;
+    title: string;
+    category: string;
+    priority: string;
+    status: string;
+    submitted: string;
+    location: string;
+  }>;
+}
+
+export interface MLADashboardResponse {
+  success: boolean;
+  message: string;
+  data: MLADashboardData;
+}
+
+export interface MLADashboardStatsResponse {
+  success: boolean;
+  message: string;
+  data: MLADashboardStats;
+}
