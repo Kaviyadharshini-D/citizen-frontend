@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { RealtimeSummary } from "../components/RealtimeSummary";
@@ -151,6 +152,11 @@ export default function Index() {
         </div>
       </Layout>
     );
+  }
+
+  // Redirect admins to dedicated admin dashboard to avoid duplicate dashboards
+  if (user.role === "admin") {
+    return <Navigate to="/admin" replace />;
   }
 
   // Determine which dashboard to show based on user role

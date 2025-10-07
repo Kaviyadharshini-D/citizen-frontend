@@ -64,6 +64,10 @@ export interface Constituency {
   id: string;
   name: string;
   constituency_id: string;
+  district?: string;
+  population?: number;
+  reserved_category?: "SC" | "ST" | "OBC" | "None";
+  mla_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -284,6 +288,38 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// Admin Management Types
+export interface MLAProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone_number?: string;
+  party?: string;
+  photo_url?: string;
+  bio?: string;
+  term_start?: string; // ISO date
+  term_end?: string;   // ISO date
+  status: "active" | "inactive" | "ended";
+  constituency_id?: string; // one-to-one link
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  type: "mla" | "constituency" | "user" | "assignment";
+  action: string; // e.g., assigned, updated, deleted
+  entity_id: string;
+  entity_name?: string;
+  actor: {
+    id: string;
+    name: string;
+    role: RoleTypes;
+  };
+  created_at: string;
+  meta?: Record<string, any>;
 }
 
 // MLA Dashboard Types
