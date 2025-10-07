@@ -201,17 +201,7 @@ export default function Signup() {
   };
 
   const redirectBasedOnRole = (role: string) => {
-    switch (role) {
-      case "MLA":
-        navigate("/analytics");
-        break;
-      case "Department":
-        navigate("/");
-        break;
-      default:
-        navigate("/issues");
-        break;
-    }
+    navigate("/");
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -246,7 +236,7 @@ export default function Signup() {
         phone_number: formData.phone,
         constituency_id: selectedConstituency.id,
         panchayat_id: selectedPanchayat._id,
-        ward_no: selectedWard?._id,
+        ward_no: selectedWard?.ward_id,
       };
 
       console.log(signupData);

@@ -2,18 +2,18 @@ import { Layout } from "../components/Layout";
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
 import { motion } from "framer-motion";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Lock, 
-  LogOut, 
-  Shield, 
-  Bell, 
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  LogOut,
+  Shield,
+  Bell,
   Palette,
   Save,
   Eye,
-  EyeOff
+  EyeOff,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,7 @@ export default function Settings() {
   const { user, setUser } = useUser();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -47,43 +47,52 @@ export default function Settings() {
   // Notification settings - load from localStorage
   const [notifications, setNotifications] = useState(() => {
     const savedNotifications = localStorage.getItem("notification_settings");
-    return savedNotifications ? JSON.parse(savedNotifications) : {
-      email: true,
-      push: true,
-      sms: false,
-    };
+    return savedNotifications
+      ? JSON.parse(savedNotifications)
+      : {
+          email: true,
+          push: true,
+          sms: false,
+        };
   });
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handlePasswordChange = (field: string, value: string) => {
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleNotificationChange = (type: string, value: boolean) => {
-    setNotifications(prev => ({
+    setNotifications((prev) => ({
       ...prev,
-      [type]: value
+      [type]: value,
     }));
-    
+
     // Save notification preferences
-    const savedNotifications = JSON.parse(localStorage.getItem("notification_settings") || "{}");
+    const savedNotifications = JSON.parse(
+      localStorage.getItem("notification_settings") || "{}",
+    );
     savedNotifications[type] = value;
-    localStorage.setItem("notification_settings", JSON.stringify(savedNotifications));
-    
-    toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} notifications ${value ? "enabled" : "disabled"}`);
+    localStorage.setItem(
+      "notification_settings",
+      JSON.stringify(savedNotifications),
+    );
+
+    toast.success(
+      `${type.charAt(0).toUpperCase() + type.slice(1)} notifications ${value ? "enabled" : "disabled"}`,
+    );
   };
 
   const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme as 'light' | 'dark' | 'auto');
+    setTheme(newTheme as "light" | "dark" | "auto");
     toast.success(`Theme changed to ${newTheme}`);
   };
 
@@ -125,13 +134,13 @@ export default function Settings() {
     // Clear user data from localStorage
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user_data");
-    
+
     // Clear user context
     setUser(null);
-    
+
     // Show success message
     toast.success("Logged out successfully");
-    
+
     // Redirect to login page
     navigate("/login");
   };
@@ -191,7 +200,9 @@ export default function Settings() {
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                     <User className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">Profile</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                    Profile
+                  </h2>
                 </div>
 
                 <div className="space-y-6">
@@ -204,7 +215,9 @@ export default function Settings() {
                       <input
                         type="text"
                         value={formData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
                         className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
                         placeholder="Enter your full name"
                       />
@@ -221,7 +234,9 @@ export default function Settings() {
                       <input
                         type="email"
                         value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
                         placeholder="Enter your email"
                       />
@@ -238,7 +253,9 @@ export default function Settings() {
                       <input
                         type="tel"
                         value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("phone", e.target.value)
+                        }
                         className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
                         placeholder="Enter your phone number"
                       />
@@ -265,7 +282,9 @@ export default function Settings() {
                   <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
                     <Shield className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">Security</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                    Security
+                  </h2>
                 </div>
 
                 <div className="space-y-6">
@@ -297,15 +316,29 @@ export default function Settings() {
                           <input
                             type={showPasswords.current ? "text" : "password"}
                             value={passwordData.currentPassword}
-                            onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
+                            onChange={(e) =>
+                              handlePasswordChange(
+                                "currentPassword",
+                                e.target.value,
+                              )
+                            }
                             className="w-full pl-10 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
                             placeholder="Enter current password"
                           />
                           <button
-                            onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                            onClick={() =>
+                              setShowPasswords((prev) => ({
+                                ...prev,
+                                current: !prev.current,
+                              }))
+                            }
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                           >
-                            {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {showPasswords.current ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -320,15 +353,29 @@ export default function Settings() {
                           <input
                             type={showPasswords.new ? "text" : "password"}
                             value={passwordData.newPassword}
-                            onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
+                            onChange={(e) =>
+                              handlePasswordChange(
+                                "newPassword",
+                                e.target.value,
+                              )
+                            }
                             className="w-full pl-10 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
                             placeholder="Enter new password"
                           />
                           <button
-                            onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                            onClick={() =>
+                              setShowPasswords((prev) => ({
+                                ...prev,
+                                new: !prev.new,
+                              }))
+                            }
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                           >
-                            {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {showPasswords.new ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -343,15 +390,29 @@ export default function Settings() {
                           <input
                             type={showPasswords.confirm ? "text" : "password"}
                             value={passwordData.confirmPassword}
-                            onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
+                            onChange={(e) =>
+                              handlePasswordChange(
+                                "confirmPassword",
+                                e.target.value,
+                              )
+                            }
                             className="w-full pl-10 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
                             placeholder="Confirm new password"
                           />
                           <button
-                            onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                            onClick={() =>
+                              setShowPasswords((prev) => ({
+                                ...prev,
+                                confirm: !prev.confirm,
+                              }))
+                            }
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                           >
-                            {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {showPasswords.confirm ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -398,20 +459,28 @@ export default function Settings() {
                   <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
                     <Bell className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">Notifications</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                    Notifications
+                  </h2>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">Email Notifications</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Receive updates via email</p>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                        Email Notifications
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">
+                        Receive updates via email
+                      </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={notifications.email}
-                        onChange={(e) => handleNotificationChange("email", e.target.checked)}
+                        onChange={(e) =>
+                          handleNotificationChange("email", e.target.checked)
+                        }
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -420,14 +489,20 @@ export default function Settings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">Push Notifications</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Receive push notifications</p>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                        Push Notifications
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">
+                        Receive push notifications
+                      </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={notifications.push}
-                        onChange={(e) => handleNotificationChange("push", e.target.checked)}
+                        onChange={(e) =>
+                          handleNotificationChange("push", e.target.checked)
+                        }
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -436,14 +511,20 @@ export default function Settings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">SMS Notifications</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Receive updates via SMS</p>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                        SMS Notifications
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">
+                        Receive updates via SMS
+                      </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={notifications.sms}
-                        onChange={(e) => handleNotificationChange("sms", e.target.checked)}
+                        onChange={(e) =>
+                          handleNotificationChange("sms", e.target.checked)
+                        }
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -460,7 +541,9 @@ export default function Settings() {
                   <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
                     <Palette className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">Appearance</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                    Appearance
+                  </h2>
                 </div>
 
                 <div className="space-y-4">
@@ -480,7 +563,9 @@ export default function Settings() {
                         }`}
                       >
                         <div className="w-6 h-6 bg-yellow-400 rounded-full mx-auto mb-2"></div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors duration-300">Light</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                          Light
+                        </span>
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -493,7 +578,9 @@ export default function Settings() {
                         }`}
                       >
                         <div className="w-6 h-6 bg-slate-800 dark:bg-slate-200 rounded-full mx-auto mb-2"></div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors duration-300">Dark</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                          Dark
+                        </span>
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -506,7 +593,9 @@ export default function Settings() {
                         }`}
                       >
                         <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-slate-800 dark:from-yellow-400 dark:to-slate-200 rounded-full mx-auto mb-2"></div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors duration-300">Auto</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                          Auto
+                        </span>
                       </motion.button>
                     </div>
                   </div>

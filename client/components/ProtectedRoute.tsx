@@ -45,22 +45,7 @@ export default function ProtectedRoute({
   // Redirect based on user role if they don't have access
   let redirectPath = "/login";
   if (user && user.role) {
-    switch (user.role) {
-      case "mlastaff":
-        redirectPath = "/analytics";
-        break;
-      case "dept":
-      case "dept_staff":
-        redirectPath = "/";
-        break;
-      case "admin":
-        redirectPath = "/"; // Admin has access to all pages
-        break;
-      case "citizen":
-      default:
-        redirectPath = "/issues";
-        break;
-    }
+    redirectPath = "/";
   }
 
   // Show "not authenticated" message for unauthorized access

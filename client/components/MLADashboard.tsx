@@ -20,6 +20,9 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import ScheduleReviewForm from "./ScheduleReviewForm";
+import ScheduledReviews from "./ScheduledReviews";
+import { exportAllTabsToPDF } from "../lib/pdfExport";
 import {
   BarChart,
   Bar,
@@ -72,6 +75,7 @@ import {
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
   RefreshCw,
+  FileDown,
 } from "lucide-react";
 import {
   useMLADashboard,
@@ -299,6 +303,7 @@ export const MLADashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { user } = useUser();
   const constituencyId = user?.constituency_id || "64f1a2b3c4d5e6f7g8h9i0j1"; // Fallback ID
@@ -362,6 +367,36 @@ export const MLADashboard = () => {
       toast.success("Dashboard updated successfully");
     } catch (error) {
       toast.error("Failed to update dashboard");
+    }
+  };
+
+  // Export dashboard to PDF
+  const handleExportToPDF = async () => {
+    setIsExporting(true);
+    try {
+      const tabElements = [
+        { id: "overview-tab", name: "Overview" },
+        { id: "departments-tab", name: "Departments" },
+        { id: "issues-tab", name: "Issues" },
+        { id: "users-tab", name: "Users" },
+        { id: "ai-tab", name: "AI Insights" },
+        { id: "scheduled-reviews-tab", name: "Scheduled Reviews" },
+      ];
+
+      await exportAllTabsToPDF(tabElements, {
+        filename: `MLA-Dashboard-Report-${new Date().toISOString().split("T")[0]}.pdf`,
+        quality: 0.98,
+        scale: 2,
+        format: "a4",
+        orientation: "landscape",
+      });
+
+      toast.success("Dashboard exported to PDF successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export dashboard to PDF");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -640,16 +675,19 @@ export const MLADashboard = () => {
       {/* Main Analytics Tabs */}
       <motion.div variants={itemVariants}>
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="departments">Departments</TabsTrigger>
             <TabsTrigger value="issues">Issues</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="ai">AI Insights</TabsTrigger>
+            <TabsTrigger value="scheduled-reviews">
+              Scheduled Reviews
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" id="overview-tab" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Issues Trend */}
               <Card>
@@ -758,7 +796,11 @@ export const MLADashboard = () => {
           </TabsContent>
 
           {/* Departments Tab */}
-          <TabsContent value="departments" className="space-y-6">
+          <TabsContent
+            value="departments"
+            id="departments-tab"
+            className="space-y-6"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -899,7 +941,7 @@ export const MLADashboard = () => {
           </TabsContent>
 
           {/* Issues Tab */}
-          <TabsContent value="issues" className="space-y-6">
+          <TabsContent value="issues" id="issues-tab" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Issues Resolution Trend */}
               <Card>
@@ -1026,7 +1068,7 @@ export const MLADashboard = () => {
           </TabsContent>
 
           {/* Users Tab */}
-          <TabsContent value="users" className="space-y-6">
+          <TabsContent value="users" id="users-tab" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* User Engagement */}
               <Card>
@@ -1149,7 +1191,7 @@ export const MLADashboard = () => {
           </TabsContent>
 
           {/* AI Insights Tab */}
-          <TabsContent value="ai" className="space-y-6">
+          <TabsContent value="ai" id="ai-tab" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1383,27 +1425,31 @@ export const MLADashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Scheduled Reviews Tab */}
+          <TabsContent
+            value="scheduled-reviews"
+            id="scheduled-reviews-tab"
+            className="space-y-6"
+          >
+            <ScheduledReviews />
+          </TabsContent>
         </Tabs>
       </motion.div>
 
       {/* Action Items */}
       <motion.div variants={itemVariants} className="flex gap-4">
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Download className="h-4 w-4 mr-2" />
-          Export Report
+        <Button
+          onClick={handleExportToPDF}
+          disabled={isExporting}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <FileDown
+            className={`h-4 w-4 mr-2 ${isExporting ? "animate-spin" : ""}`}
+          />
+          {isExporting ? "Exporting..." : "Export Dashboard"}
         </Button>
-        <Button className="bg-green-600 hover:bg-green-700">
-          <Share2 className="h-4 w-4 mr-2" />
-          Share Dashboard
-        </Button>
-        <Button variant="outline">
-          <Calendar className="h-4 w-4 mr-2" />
-          Schedule Review
-        </Button>
-        <Button variant="outline">
-          <Settings className="h-4 w-4 mr-2" />
-          Customize
-        </Button>
+        <ScheduleReviewForm />
       </motion.div>
     </motion.div>
   );

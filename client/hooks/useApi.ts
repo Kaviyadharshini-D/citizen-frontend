@@ -526,14 +526,23 @@ export const useMLADashboardStats = (constituencyId: string) => {
 
 export const useUpdateMLADashboard = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ constituencyId, data }: { constituencyId: string; data: Partial<MLADashboardData> }) =>
-      apiService.updateMLADashboard(constituencyId, data),
+    mutationFn: ({
+      constituencyId,
+      data,
+    }: {
+      constituencyId: string;
+      data: Partial<MLADashboardData>;
+    }) => apiService.updateMLADashboard(constituencyId, data),
     onSuccess: (_, { constituencyId }) => {
       // Invalidate and refetch dashboard data
-      queryClient.invalidateQueries({ queryKey: ["mla-dashboard", constituencyId] });
-      queryClient.invalidateQueries({ queryKey: ["mla-dashboard-stats", constituencyId] });
+      queryClient.invalidateQueries({
+        queryKey: ["mla-dashboard", constituencyId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["mla-dashboard-stats", constituencyId],
+      });
     },
   });
 };
