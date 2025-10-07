@@ -23,6 +23,9 @@ import {
   MLADashboardResponse,
   MLADashboardData,
   MLADashboardStatsResponse,
+  PaginatedResponse,
+  MLAProfile,
+  AuditLogEntry,
 } from "../types/api";
 
 const API_BASE_URL = "http://localhost:3333/api";
@@ -687,6 +690,134 @@ class ApiService {
       console.warn("MLA Dashboard API failed, will use mock data:", error);
       throw error;
     }
+  }
+
+  // ----------------------
+  // Admin Management APIs
+  // ----------------------
+
+  // Constituencies CRUD (admin)
+  async adminGetConstituencies(params?: {
+    q?: string;
+    district?: string;
+    reserved_category?: string;
+    unassigned?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<Constituency>> {
+    const search = new URLSearchParams();
+    Object.entries(params || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+    });
+    const qs = search.toString();
+    return this.request<PaginatedResponse<Constituency>>(
+      `/admin/constituencies${qs ? `?${qs}` : ""}`,
+    );
+  }
+
+  async adminCreateConstituency(data: Partial<Constituency>): Promise<ApiResponse<Constituency>> {
+    return this.request<ApiResponse<Constituency>>(`/admin/constituencies`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdateConstituency(id: string, data: Partial<Constituency>): Promise<ApiResponse<Constituency>> {
+    return this.request<ApiResponse<Constituency>>(`/admin/constituencies/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminDeleteConstituency(id: string, options?: { force?: boolean; reason?: string }): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/admin/constituencies/${id}`, {
+      method: "DELETE",
+      body: options ? JSON.stringify(options) : undefined,
+    });
+  }
+
+  // MLA CRUD (admin)
+  async adminGetMLAs(params?: {
+    q?: string;
+    party?: string;
+    status?: string;
+    constituency_id?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<MLAProfile>> {
+    const search = new URLSearchParams();
+    Object.entries(params || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+    });
+    const qs = search.toString();
+    return this.request<PaginatedResponse<MLAProfile>>(
+      `/admin/mlas${qs ? `?${qs}` : ""}`,
+    );
+  }
+
+  async adminCreateMLA(data: Partial<MLAProfile>): Promise<ApiResponse<MLAProfile>> {
+    return this.request<ApiResponse<MLAProfile>>(`/admin/mlas`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdateMLA(id: string, data: Partial<MLAProfile>): Promise<ApiResponse<MLAProfile>> {
+    return this.request<ApiResponse<MLAProfile>>(`/admin/mlas/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminDeleteMLA(id: string, confirmText?: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/admin/mlas/${id}`, {
+      method: "DELETE",
+      body: confirmText ? JSON.stringify({ confirm: confirmText }) : undefined,
+    });
+  }
+
+  // Assignment: one-to-one MLA <-> Constituency
+  async adminAssignMLAToConstituency(mlaId: string, constituencyId: string, reason?: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/admin/constituencies/${constituencyId}/mla`, {
+      method: "POST",
+      body: JSON.stringify({ mla_id: mlaId, reason }),
+    });
+  }
+
+  async adminUnassignMLAFromConstituency(constituencyId: string, reason?: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/admin/constituencies/${constituencyId}/mla`, {
+      method: "DELETE",
+      body: reason ? JSON.stringify({ reason }) : undefined,
+    });
+  }
+
+  // Users & Roles (admin)
+  async adminGetUsers(params?: { q?: string; role?: string; page?: number; limit?: number }): Promise<PaginatedResponse<any>> {
+    const search = new URLSearchParams();
+    Object.entries(params || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+    });
+    const qs = search.toString();
+    return this.request<PaginatedResponse<any>>(`/admin/users${qs ? `?${qs}` : ""}`);
+  }
+
+  async adminUpdateUserRole(userId: string, role: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/admin/users/${userId}/role`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  // Audit Trail
+  async adminGetAuditLogs(params?: { type?: string; limit?: number; page?: number }): Promise<PaginatedResponse<AuditLogEntry>> {
+    const search = new URLSearchParams();
+    Object.entries(params || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+    });
+    const qs = search.toString();
+    return this.request<PaginatedResponse<AuditLogEntry>>(
+      `/admin/audit${qs ? `?${qs}` : ""}`,
+    );
   }
 
   async updateMLADashboard(

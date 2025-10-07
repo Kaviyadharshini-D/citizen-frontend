@@ -343,370 +343,382 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden">
+      <div className="h-full max-w-7xl mx-auto flex flex-col">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="text-center"
+          className="text-center py-6 flex-shrink-0"
         >
-          <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
             Community Dashboard
           </h1>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Issue Submission Form */}
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col lg:flex-row gap-6 p-6 min-h-0">
+          {/* Issue Submission Form - Fixed */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8"
+            className="lg:w-1/2 bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col min-h-0"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Plus className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">
-                  Report an Issue
-                </h2>
-                <p className="text-slate-600">Help improve your community</p>
+            {/* Header - Fixed */}
+            <div className="p-6 lg:p-8 flex-shrink-0 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl lg:text-2xl font-bold text-slate-800">
+                    Report an Issue
+                  </h2>
+                  <p className="text-slate-600 text-sm">Help improve your community</p>
+                </div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Title */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Issue Title *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Brief description of the issue..."
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  maxLength={200}
-                />
-                <div className="text-xs text-slate-500 mt-1">
-                  {formData.title.length}/200 characters
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Detailed Description *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Provide detailed information about the issue..."
-                  rows={4}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                  maxLength={2000}
-                />
-                <div className="text-xs text-slate-500 mt-1">
-                  {formData.description.length}/2000 characters
-                </div>
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Location *
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="Specific location or address..."
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  maxLength={200}
-                />
-              </div>
-
-              {/* File Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Attachments (Optional)
-                </label>
-                <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors duration-200">
+            {/* Form Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Issue Title *
+                  </label>
                   <input
-                    type="file"
-                    multiple
-                    accept="image/*,.pdf"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    id="file-upload"
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="Brief description of the issue..."
+                    className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                    maxLength={200}
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="w-8 h-8 text-slate-400" />
-                      <span className="text-slate-600 font-medium">
-                        Click to upload files
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        Images or PDFs, max 5MB each
-                      </span>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {formData.title.length}/200 characters
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Detailed Description *
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Provide detailed information about the issue..."
+                    rows={3}
+                    className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none text-sm"
+                    maxLength={2000}
+                  />
+                  <div className="text-xs text-slate-500 mt-1">
+                    {formData.description.length}/2000 characters
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Location *
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    placeholder="Specific location or address..."
+                    className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-slate-300 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                    maxLength={200}
+                  />
+                </div>
+
+                {/* File Upload */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Attachments (Optional)
+                  </label>
+                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-4 lg:p-6 text-center hover:border-blue-400 transition-colors duration-200">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <div className="flex flex-col items-center gap-2">
+                        <Upload className="w-6 h-6 lg:w-8 lg:h-8 text-slate-400" />
+                        <span className="text-slate-600 font-medium text-sm">
+                          Click to upload files
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          Images or PDFs, max 5MB each
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Selected Files */}
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {selectedFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-slate-50 rounded-lg p-2 lg:p-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            {file.type.startsWith("image/") ? (
+                              <ImageIcon className="w-4 h-4 text-blue-500" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-blue-500" />
+                            )}
+                            <span className="text-sm font-medium text-slate-700 truncate">
+                              {file.name}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
+                  )}
+                </div>
+
+                {/* Anonymous Submission */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="anonymous"
+                    checked={submitAnonymously}
+                    onChange={(e) => setSubmitAnonymously(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="anonymous" className="text-sm text-slate-700">
+                    Submit anonymously
                   </label>
                 </div>
 
-                {/* Selected Files */}
-                {selectedFiles.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {selectedFiles.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between bg-slate-50 rounded-lg p-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          {file.type.startsWith("image/") ? (
-                            <ImageIcon className="w-4 h-4 text-blue-500" />
-                          ) : (
-                            <FileText className="w-4 h-4 text-blue-500" />
-                          )}
-                          <span className="text-sm font-medium text-slate-700">
-                            {file.name}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeFile(index)}
-                          className="text-slate-400 hover:text-red-500 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Anonymous Submission */}
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="anonymous"
-                  checked={submitAnonymously}
-                  onChange={(e) => setSubmitAnonymously(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="anonymous" className="text-sm text-slate-700">
-                  Submit anonymously
-                </label>
-              </div>
-
-              {/* Submit Button */}
-              <motion.button
-                type="submit"
-                disabled={isSubmitting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Submit Issue
-                  </>
-                )}
-              </motion.button>
-            </form>
+                {/* Submit Button */}
+                <motion.button
+                  type="submit"
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-2 lg:py-3 px-4 lg:px-6 rounded-xl hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Submit Issue
+                    </>
+                  )}
+                </motion.button>
+              </form>
+            </div>
           </motion.div>
 
-          {/* Issue Feed */}
+          {/* Issue Feed - Scrollable */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8"
+            className="lg:w-1/2 bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col min-h-0"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-white" />
+            {/* Header - Fixed */}
+            <div className="p-6 lg:p-8 flex-shrink-0 border-b border-slate-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl lg:text-2xl font-bold text-slate-800">
+                    Community Issues
+                  </h2>
+                  <p className="text-slate-600 text-sm">
+                    {filteredIssues.length} issue
+                    {filteredIssues.length !== 1 ? "s" : ""} in {userConstituency}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">
-                  Community Issues
-                </h2>
-                <p className="text-slate-600">
-                  {filteredIssues.length} issue
-                  {filteredIssues.length !== 1 ? "s" : ""} in {userConstituency}
-                </p>
+
+              {/* Filter Buttons */}
+              <div className="flex flex-wrap gap-2 lg:gap-3">
+                <motion.button
+                  variants={filterButtonVariants}
+                  whileHover="active"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleFilterChange("latest")}
+                  className={`flex items-center gap-1 lg:gap-2 px-3 lg:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                    activeFilter === "latest"
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  <Clock className="w-3 h-3 lg:w-4 lg:h-4" />
+                  Latest
+                </motion.button>
+                <motion.button
+                  variants={filterButtonVariants}
+                  whileHover="active"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleFilterChange("upvotes")}
+                  className={`flex items-center gap-1 lg:gap-2 px-3 lg:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                    activeFilter === "upvotes"
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4" />
+                  Most Popular
+                </motion.button>
+                <motion.button
+                  variants={filterButtonVariants}
+                  whileHover="active"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleFilterChange("category")}
+                  className={`flex items-center gap-1 lg:gap-2 px-3 lg:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                    activeFilter === "category"
+                      ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  <Filter className="w-3 h-3 lg:w-4 lg:h-4" />
+                  By Category
+                </motion.button>
               </div>
-            </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              <motion.button
-                variants={filterButtonVariants}
-                whileHover="active"
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleFilterChange("latest")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  activeFilter === "latest"
-                    ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <Clock className="w-4 h-4" />
-                Latest
-              </motion.button>
-              <motion.button
-                variants={filterButtonVariants}
-                whileHover="active"
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleFilterChange("upvotes")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  activeFilter === "upvotes"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <TrendingUp className="w-4 h-4" />
-                Most Popular
-              </motion.button>
-              <motion.button
-                variants={filterButtonVariants}
-                whileHover="active"
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleFilterChange("category")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  activeFilter === "category"
-                    ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <Filter className="w-4 h-4" />
-                By Category
-              </motion.button>
-            </div>
-
-            {/* Category Filter Dropdown */}
-            <AnimatePresence>
-              {activeFilter === "category" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden mb-6"
-                >
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="">Select a category...</option>
-                    <option value="road">🚧 Road Issues</option>
-                    <option value="water">💧 Water Supply</option>
-                    <option value="electricity">⚡ Electricity</option>
-                    <option value="sanitation">🧹 Sanitation</option>
-                    <option value="healthcare">🏥 Healthcare</option>
-                    <option value="education">📚 Education</option>
-                    <option value="transportation">🚌 Transportation</option>
-                  </select>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Issues List */}
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-4 h-full overflow-y-auto"
-            >
-              {issuesLoading ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-8"
-                >
-                  <div className="inline-flex items-center gap-3 text-slate-600">
-                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="font-medium">Loading issues...</span>
-                  </div>
-                </motion.div>
-              ) : filteredIssues.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-8"
-                >
-                  <div className="text-slate-500">
-                    <div className="text-4xl mb-2">📭</div>
-                    <h3 className="font-semibold mb-1">
-                      {activeFilter === "category" && selectedCategory
-                        ? `No issues found for "${selectedCategory}"`
-                        : "No issues found"}
-                    </h3>
-                    <p className="text-sm text-slate-400">
-                      {activeFilter === "category" && selectedCategory
-                        ? "Try selecting a different category"
-                        : "Be the first to report an issue!"}
-                    </p>
-                  </div>
-                </motion.div>
-              ) : (
-                filteredIssues.map((issue, index) => (
+              {/* Category Filter Dropdown */}
+              <AnimatePresence>
+                {activeFilter === "category" && (
                   <motion.div
-                    key={issue._id || index}
-                    variants={itemVariants}
-                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                    className="bg-slate-50 rounded-xl p-4 hover:bg-slate-100 transition-all duration-200 border border-slate-200"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden mt-4"
                   >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(issue.status)}
-                          <div className="flex items-center gap-1 text-slate-500">
-                            <Calendar className="w-3 h-3" />
-                            <span className="text-xs font-medium">
-                              {formatDate(issue.created_at)}
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                      className="w-full px-3 lg:px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                    >
+                      <option value="">Select a category...</option>
+                      <option value="road">🚧 Road Issues</option>
+                      <option value="water">💧 Water Supply</option>
+                      <option value="electricity">⚡ Electricity</option>
+                      <option value="sanitation">🧹 Sanitation</option>
+                      <option value="healthcare">🏥 Healthcare</option>
+                      <option value="education">📚 Education</option>
+                      <option value="transportation">🚌 Transportation</option>
+                    </select>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Issues List - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8 pt-4 lg:pt-4">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="space-y-3 lg:space-y-4"
+              >
+                {issuesLoading ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-8"
+                  >
+                    <div className="inline-flex items-center gap-3 text-slate-600">
+                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="font-medium text-sm">Loading issues...</span>
+                    </div>
+                  </motion.div>
+                ) : filteredIssues.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-8"
+                  >
+                    <div className="text-slate-500">
+                      <div className="text-4xl mb-2">📭</div>
+                      <h3 className="font-semibold mb-1 text-sm">
+                        {activeFilter === "category" && selectedCategory
+                          ? `No issues found for "${selectedCategory}"`
+                          : "No issues found"}
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        {activeFilter === "category" && selectedCategory
+                          ? "Try selecting a different category"
+                          : "Be the first to report an issue!"}
+                      </p>
+                    </div>
+                  </motion.div>
+                ) : (
+                  filteredIssues.map((issue, index) => (
+                    <motion.div
+                      key={issue._id || index}
+                      variants={itemVariants}
+                      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                      className="bg-slate-50 rounded-xl p-3 lg:p-4 hover:bg-slate-100 transition-all duration-200 border border-slate-200"
+                    >
+                      <div className="space-y-2 lg:space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(issue.status)}
+                            <div className="flex items-center gap-1 text-slate-500">
+                              <Calendar className="w-3 h-3" />
+                              <span className="text-xs font-medium">
+                                {formatDate(issue.created_at)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-emerald-600">
+                            <ThumbsUp className="w-3 h-3" />
+                            <span className="text-xs font-semibold">
+                              {issue.upvotes || 0}
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 text-emerald-600">
-                          <ThumbsUp className="w-3 h-3" />
-                          <span className="text-xs font-semibold">
-                            {issue.upvotes || 0}
+
+                        <h3 className="font-semibold text-slate-800 leading-tight text-sm lg:text-base">
+                          {issue.title}
+                        </h3>
+
+                        <p className="text-xs lg:text-sm text-slate-600 line-clamp-2">
+                          {issue.detail}
+                        </p>
+
+                        <div className="flex items-center gap-2 text-slate-500">
+                          <MapPin className="w-3 h-3" />
+                          <span className="text-xs font-medium">
+                            {issue.locality || "Location not specified"}
                           </span>
                         </div>
                       </div>
-
-                      <h3 className="font-semibold text-slate-800 leading-tight">
-                        {issue.title}
-                      </h3>
-
-                      <p className="text-sm text-slate-600 line-clamp-2">
-                        {issue.detail}
-                      </p>
-
-                      <div className="flex items-center gap-2 text-slate-500">
-                        <MapPin className="w-3 h-3" />
-                        <span className="text-xs font-medium">
-                          {issue.locality || "Location not specified"}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </motion.div>
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </div>

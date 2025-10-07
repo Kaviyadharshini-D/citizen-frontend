@@ -7,6 +7,7 @@ import {
   User,
   Shield,
   Building2,
+  ShieldCheck,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "../context/UserContext";
@@ -82,18 +83,29 @@ export function Sidebar() {
         ];
       case "admin":
         return [
-          ...baseItems,
           {
-            icon: Flag,
-            label: "Issues",
-            path: "/issues",
-            active: location.pathname === "/issues",
+            icon: Home,
+            label: "Dashboard",
+            path: "/admin",
+            active: location.pathname === "/admin",
           },
           {
-            icon: FileText,
-            label: "Reports",
-            path: "/reports",
-            active: location.pathname === "/reports",
+            icon: Flag,
+            label: "Constituencies",
+            path: "/admin/constituencies",
+            active: location.pathname === "/admin/constituencies",
+          },
+          {
+            icon: ShieldCheck,
+            label: "MLA",
+            path: "/admin/mla",
+            active: location.pathname === "/admin/mla",
+          },
+          {
+            icon: Building2,
+            label: "Department",
+            path: "/admin/department",
+            active: location.pathname === "/admin/department",
           },
           {
             icon: Settings,

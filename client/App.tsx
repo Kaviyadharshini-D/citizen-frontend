@@ -21,6 +21,10 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminConstituencies from "./pages/AdminConstituencies";
+import AdminMLA from "./pages/AdminMLA";
+import AdminDepartment from "./pages/AdminDepartment";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -75,6 +79,38 @@ const router = createBrowserRouter(
           allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
         >
           <Reports />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/admin",
+      element: (
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/admin/constituencies",
+      element: (
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminConstituencies />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/admin/mla",
+      element: (
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminMLA />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/admin/department",
+      element: (
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminDepartment />
         </ProtectedRoute>
       ),
     },
