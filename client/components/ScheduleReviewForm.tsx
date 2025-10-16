@@ -32,6 +32,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Calendar, Clock, Users, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useCreateMeeting } from "../hooks/useApi";
+import { useUser } from "../context/UserContext";
+import { convertTo24Hour } from "../lib/timeUtils";
 
 const scheduleReviewSchema = z.object({
   meetingName: z.string().min(1, "Meeting name is required"),
@@ -67,6 +70,10 @@ export const ScheduleReviewForm: React.FC<ScheduleReviewFormProps> = ({
   trigger,
   onSchedule,
 }) => {
+  const { user } = useUser();
+  const constituencyId = user?.constituency_id || "";
+  const createMeetingMutation = useCreateMeeting();
+
   const [open, setOpen] = useState(false);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
@@ -83,14 +90,24 @@ export const ScheduleReviewForm: React.FC<ScheduleReviewFormProps> = ({
 
   const onSubmit = (data: ScheduleReviewFormData) => {
     try {
-      // Here you would typically send the data to your API
-      console.log("Scheduling review with data:", data);
-
       if (onSchedule) {
         onSchedule(data);
+      } else {
+        // Convert time to 24-hour format before sending to API
+        const time24Hour = convertTo24Hour(data.time);
+
+        createMeetingMutation.mutate({
+          constituencyId,
+          data: {
+            meetingName: data.meetingName,
+            departments: data.departments,
+            date: data.date,
+            time: time24Hour,
+            description: data.description,
+          },
+        });
       }
 
-      toast.success("Review meeting scheduled successfully!");
       setOpen(false);
       form.reset();
       setSelectedDepartments([]);
@@ -188,7 +205,29 @@ export const ScheduleReviewForm: React.FC<ScheduleReviewFormProps> = ({
                       Time
                     </FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input
+                        type="time"
+                        value={field.value ? field.value.split(" ")[0] : ""}
+                        onChange={(e) => {
+                          const timeValue = e.target.value;
+                          // Convert 24-hour format to 12-hour format for display
+                          if (timeValue) {
+                            const [hours, minutes] = timeValue.split(":");
+                            const hour24 = parseInt(hours);
+                            const hour12 =
+                              hour24 === 0
+                                ? 12
+                                : hour24 > 12
+                                  ? hour24 - 12
+                                  : hour24;
+                            const period = hour24 >= 12 ? "PM" : "AM";
+                            const time12 = `${hour12}:${minutes} ${period}`;
+                            field.onChange(time12);
+                          } else {
+                            field.onChange("");
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

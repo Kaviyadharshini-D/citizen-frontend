@@ -19,6 +19,14 @@ import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -51,6 +59,13 @@ import {
   Zap as ElectricityIcon,
   Settings,
 } from "lucide-react";
+import {
+  useDepartmentIssues,
+  useAssignIssue,
+  useDepartmentEmployees,
+} from "../hooks/useApi";
+import { useUser } from "../context/UserContext";
+import { Issue, Employee } from "../types/api";
 
 // Mock data for TNEB (Tamil Nadu Electricity Board) department
 const mockTNEBData = {
@@ -70,69 +85,6 @@ const mockTNEBData = {
   revenue: 12500000,
   costSavings: 450000,
 };
-
-const mockEmployeeData = [
-  {
-    id: 1,
-    name: "Rajesh Kumar",
-    role: "Senior Engineer",
-    issuesResolved: 28,
-    avgResponseTime: 1.5,
-    satisfaction: 4.8,
-    efficiency: 94,
-    specialization: "Power Distribution",
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    role: "Field Engineer",
-    issuesResolved: 32,
-    avgResponseTime: 1.2,
-    satisfaction: 4.9,
-    efficiency: 96,
-    specialization: "Line Maintenance",
-  },
-  {
-    id: 3,
-    name: "Arun Singh",
-    role: "Supervisor",
-    issuesResolved: 25,
-    avgResponseTime: 1.8,
-    satisfaction: 4.7,
-    efficiency: 92,
-    specialization: "Grid Operations",
-  },
-  {
-    id: 4,
-    name: "Meera Patel",
-    role: "Technician",
-    issuesResolved: 19,
-    avgResponseTime: 2.1,
-    satisfaction: 4.4,
-    efficiency: 87,
-    specialization: "Meter Reading",
-  },
-  {
-    id: 5,
-    name: "Suresh Reddy",
-    role: "Senior Engineer",
-    issuesResolved: 35,
-    avgResponseTime: 1.6,
-    satisfaction: 4.8,
-    efficiency: 93,
-    specialization: "Transformer Maintenance",
-  },
-  {
-    id: 6,
-    name: "Lakshmi Devi",
-    role: "Field Officer",
-    issuesResolved: 22,
-    avgResponseTime: 1.9,
-    satisfaction: 4.5,
-    efficiency: 88,
-    specialization: "Customer Service",
-  },
-];
 
 const mockIssuesData = [
   {
@@ -376,6 +328,83 @@ const mockRecentIssues = [
 export const DepartmentAnalytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("6months");
   const [selectedArea, setSelectedArea] = useState("all");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingQueryId, setEditingQueryId] = useState<string | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
+  const { user } = useUser();
+  const departmentId = user?.department_id || "default";
+
+  // Fetch department issues using React Query
+  const {
+    data: issuesData,
+    isLoading: issuesLoading,
+    error: issuesError,
+    refetch: refetchIssues,
+  } = useDepartmentIssues(departmentId);
+
+  // Fetch department employees using React Query
+  const {
+    data: employeesData,
+    isLoading: employeesLoading,
+    error: employeesError,
+    refetch: refetchEmployees,
+  } = useDepartmentEmployees(departmentId);
+  console.log(employeesData);
+  // Assignment mutation
+  const assignIssueMutation = useAssignIssue();
+
+  // Transform API issues to component format
+  const realIssues = React.useMemo(() => {
+    if (!issuesData?.issues) return [];
+    return issuesData.issues.map((issue: Issue) => {
+      // Format ID as Q-XXX (last 3 digits in caps)
+      const issueId = issue._id || (issue as any).id;
+      const lastThreeDigits = issueId.slice(-3).toUpperCase();
+      const formattedId = `Q-${lastThreeDigits}`;
+
+      return {
+        id: formattedId,
+        originalId: issueId,
+        title: issue.title,
+        detail: issue.detail,
+        locality: issue.locality,
+        priority:
+          issue.priority_level === "high"
+            ? "High"
+            : issue.priority_level === "normal"
+              ? "Medium"
+              : "Low",
+        status:
+          issue.status === "pending"
+            ? "Pending"
+            : issue.status === "in_progress"
+              ? "In Progress"
+              : "Resolved",
+        category: "General", // Category not available in API
+        submitted: issue.created_at
+          ? new Date(issue.created_at).toLocaleDateString()
+          : "Unknown",
+        location: issue.locality,
+        handled_by: issue.handled_by,
+        originalIssue: issue,
+      };
+    });
+  }, [issuesData]);
+
+  // Transform API employees to component format
+  const realEmployees = React.useMemo(() => {
+    if (!employeesData?.employees) return [];
+    return employeesData.employees.map((employee: Employee) => ({
+      id: employee.id,
+      name: employee.name,
+      role: employee.role,
+      issuesResolved: employee.issues_resolved,
+      avgResponseTime: employee.avg_response_time,
+      satisfaction: employee.satisfaction,
+      efficiency: employee.efficiency,
+      specialization: employee.specialization,
+    }));
+  }, [employeesData]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -572,10 +601,11 @@ export const DepartmentAnalytics = () => {
       {/* Main Analytics Tabs */}
       <motion.div variants={itemVariants}>
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="employees">Team Analytics</TabsTrigger>
             <TabsTrigger value="issues">Issues Analytics</TabsTrigger>
+            <TabsTrigger value="recent-issues">Recent Issues</TabsTrigger>
             <TabsTrigger value="operations">Operations</TabsTrigger>
           </TabsList>
 
@@ -718,7 +748,7 @@ export const DepartmentAnalytics = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockEmployeeData.map((employee, index) => (
+                  {realEmployees.map((employee, index) => (
                     <motion.div
                       key={employee.id}
                       className="p-4 border rounded-lg hover:shadow-md transition-shadow"
@@ -809,7 +839,7 @@ export const DepartmentAnalytics = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={mockEmployeeData}>
+                  <BarChart data={realEmployees}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -957,6 +987,253 @@ export const DepartmentAnalytics = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Recent Issues Tab */}
+          <TabsContent value="recent-issues" className="space-y-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                Recent Issues
+              </h3>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 dark:bg-slate-700">
+                    <tr>
+                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        ID
+                      </th>
+                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Title
+                      </th>
+                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Priority
+                      </th>
+                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Status
+                      </th>
+                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Assigned To
+                      </th>
+                      <th className="text-left p-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {issuesLoading ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <span className="ml-2 text-gray-600 dark:text-gray-400">
+                              Loading issues...
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : issuesError ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center">
+                          <div className="text-center">
+                            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                              Failed to Load Issues
+                            </h3>
+                            <p className="text-red-600 dark:text-red-400 mb-4">
+                              {issuesError instanceof Error
+                                ? issuesError.message
+                                : "An error occurred while loading issues."}
+                            </p>
+                            <Button
+                              onClick={() => refetchIssues()}
+                              variant="outline"
+                            >
+                              Try Again
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      realIssues
+                        .filter(
+                          (q) =>
+                            q.status === "Pending" ||
+                            q.status === "In Progress",
+                        )
+                        .sort((a, b) => {
+                          // Pending first, then In Progress
+                          const order = {
+                            Pending: 0,
+                            "In Progress": 1,
+                            Resolved: 2,
+                          } as const;
+                          if (order[a.status] !== order[b.status]) {
+                            return order[a.status] - order[b.status];
+                          }
+                          // Within same status, sort by priority High > Medium > Low
+                          const pOrder = {
+                            High: 0,
+                            Medium: 1,
+                            Low: 2,
+                          } as const;
+                          return pOrder[a.priority] - pOrder[b.priority];
+                        })
+                        .map((q) => (
+                          <tr
+                            key={q.id}
+                            className="border-t border-slate-200 dark:border-slate-700"
+                          >
+                            <td className="p-6 text-slate-800 dark:text-slate-200">
+                              {q.id}
+                            </td>
+                            <td className="p-6 text-slate-800 dark:text-slate-200">
+                              {q.title}
+                            </td>
+                            <td className="p-6">
+                              <Badge
+                                className={
+                                  q.priority === "High"
+                                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                    : q.priority === "Medium"
+                                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                                      : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
+                                }
+                              >
+                                {q.priority}
+                              </Badge>
+                            </td>
+                            <td className="p-6">
+                              <Badge
+                                className={
+                                  q.status === "Pending"
+                                    ? "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                                    : q.status === "In Progress"
+                                      ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+                                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                }
+                              >
+                                {q.status}
+                              </Badge>
+                            </td>
+                            <td className="p-6 text-slate-700 dark:text-slate-300">
+                              {q.handled_by
+                                ? typeof q.handled_by === "string"
+                                  ? q.handled_by
+                                  : q.handled_by.name || "—"
+                                : "—"}
+                            </td>
+                            <td className="p-6">
+                              {!q.handled_by ? (
+                                <Dialog
+                                  open={editOpen && editingQueryId === q.id}
+                                  onOpenChange={(o) => {
+                                    if (!o) {
+                                      setEditOpen(false);
+                                      setEditingQueryId(null);
+                                    }
+                                  }}
+                                >
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => {
+                                        setEditingQueryId(q.id);
+                                        setSelectedEmployeeId("");
+                                        setEditOpen(true);
+                                      }}
+                                    >
+                                      Assign
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Assign Employee</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <div className="text-sm mb-2">
+                                          Select employee
+                                        </div>
+                                        <Select
+                                          value={selectedEmployeeId}
+                                          onValueChange={setSelectedEmployeeId}
+                                        >
+                                          <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Choose employee" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {realEmployees.map((e) => (
+                                              <SelectItem
+                                                key={e.id}
+                                                value={e.id.toString()}
+                                              >
+                                                {e.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+                                    <DialogFooter>
+                                      <Button
+                                        onClick={() => {
+                                          if (
+                                            !editingQueryId ||
+                                            !selectedEmployeeId
+                                          )
+                                            return;
+
+                                          // Find the original issue
+                                          const queryItem = realIssues.find(
+                                            (q) => q.id === editingQueryId,
+                                          );
+                                          if (!queryItem) return;
+
+                                          // Call the assignment API using original ID
+                                          assignIssueMutation.mutate(
+                                            {
+                                              id: queryItem.originalId,
+                                              handledBy: selectedEmployeeId,
+                                            },
+                                            {
+                                              onSuccess: () => {
+                                                setEditOpen(false);
+                                                setEditingQueryId(null);
+                                                setSelectedEmployeeId("");
+                                                // Refetch issues to get updated data
+                                                refetchIssues();
+                                              },
+                                            },
+                                          );
+                                        }}
+                                        disabled={
+                                          !selectedEmployeeId ||
+                                          assignIssueMutation.isPending
+                                        }
+                                      >
+                                        {assignIssueMutation.isPending
+                                          ? "Assigning..."
+                                          : "Save"}
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Operations Tab */}

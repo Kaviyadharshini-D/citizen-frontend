@@ -11,6 +11,19 @@ import { Toaster } from "./components/ui/sonner";
 import { UserProvider } from "./context/UserContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useUser } from "./context/UserContext";
+
+// Component to handle role-based redirects
+function RoleBasedRedirect() {
+  const { user } = useUser();
+
+  if (user?.role === "dept" || user?.role === "dept_staff") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // For other roles, redirect to home page
+  return <Navigate to="/home" replace />;
+}
 
 // Pages
 import Index from "./pages/Index";
@@ -37,107 +50,104 @@ const queryClient = new QueryClient({
 });
 
 // Define routes using Data Router API with v7 future flags
-const router = createBrowserRouter(
-  [
-    // Public routes
-    { path: "/login", element: <Login /> },
-    { path: "/signup", element: <Signup /> },
+const router = createBrowserRouter([
+  // Public routes
+  { path: "/login", element: <Login /> },
+  { path: "/signup", element: <Signup /> },
 
-    // Protected routes
-    {
-      path: "/",
-      element: (
-        <ProtectedRoute
-          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
-        >
-          <Index />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/analytics",
-      element: (
-        <ProtectedRoute allowedRoles={["dept", "dept_staff"]}>
-          <Analytics />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/issues",
-      element: (
-        <ProtectedRoute
-          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
-        >
-          <Issues />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/reports",
-      element: (
-        <ProtectedRoute
-          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
-        >
-          <Reports />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/admin",
-      element: (
-        <ProtectedRoute allowedRoles={["admin"]}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/admin/constituencies",
-      element: (
-        <ProtectedRoute allowedRoles={["admin"]}>
-          <AdminConstituencies />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/admin/mla",
-      element: (
-        <ProtectedRoute allowedRoles={["admin"]}>
-          <AdminMLA />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/admin/department",
-      element: (
-        <ProtectedRoute allowedRoles={["admin"]}>
-          <AdminDepartment />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/settings",
-      element: (
-        <ProtectedRoute
-          allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
-        >
-          <Settings />
-        </ProtectedRoute>
-      ),
-    },
-
-    // Redirects
-    { path: "/dashboard", element: <Navigate to="/" replace /> },
-
-    // 404
-    { path: "*", element: <NotFound /> },
-  ],
+  // Protected routes
   {
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true,
-    },
+    path: "/",
+    element: (
+      <ProtectedRoute
+        allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+      >
+        <Index />
+      </ProtectedRoute>
+    ),
   },
-);
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute allowedRoles={["dept", "dept_staff"]}>
+        <Analytics />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/analytics",
+    element: (
+      <ProtectedRoute allowedRoles={["dept", "dept_staff"]}>
+        <Analytics />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/issues",
+    element: (
+      <ProtectedRoute
+        allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+      >
+        <Issues />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/reports",
+    element: (
+      <ProtectedRoute
+        allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+      >
+        <Reports />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/constituencies",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminConstituencies />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/mla",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminMLA />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/department",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminDepartment />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/settings",
+    element: (
+      <ProtectedRoute
+        allowedRoles={["dept", "dept_staff", "mlastaff", "citizen", "admin"]}
+      >
+        <Settings />
+      </ProtectedRoute>
+    ),
+  },
+
+  // 404
+  { path: "*", element: <NotFound /> },
+]);
 
 function App() {
   return (
@@ -145,10 +155,7 @@ function App() {
       <ThemeProvider>
         <UserProvider>
           <div className="App">
-            <RouterProvider
-              router={router}
-              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-            />
+            <RouterProvider router={router} />
             <Toaster />
           </div>
         </UserProvider>

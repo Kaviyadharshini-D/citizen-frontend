@@ -93,6 +93,11 @@ export default function UserDashboard() {
   const getFilteredIssues = () => {
     let filteredIssues = [...safeAllIssues];
 
+    // Filter out completed issues
+    filteredIssues = filteredIssues.filter(
+      (issue) => issue.status !== "completed",
+    );
+
     // Apply category filter if selected
     if (activeFilter === "category" && selectedCategory) {
       filteredIssues = filteredIssues.filter(
@@ -376,7 +381,9 @@ export default function UserDashboard() {
                   <h2 className="text-xl lg:text-2xl font-bold text-slate-800">
                     Report an Issue
                   </h2>
-                  <p className="text-slate-600 text-sm">Help improve your community</p>
+                  <p className="text-slate-600 text-sm">
+                    Help improve your community
+                  </p>
                 </div>
               </div>
             </div>
@@ -553,7 +560,8 @@ export default function UserDashboard() {
                   </h2>
                   <p className="text-slate-600 text-sm">
                     {filteredIssues.length} issue
-                    {filteredIssues.length !== 1 ? "s" : ""} in {userConstituency}
+                    {filteredIssues.length !== 1 ? "s" : ""} in{" "}
+                    {userConstituency}
                   </p>
                 </div>
               </div>
@@ -649,7 +657,9 @@ export default function UserDashboard() {
                   >
                     <div className="inline-flex items-center gap-3 text-slate-600">
                       <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="font-medium text-sm">Loading issues...</span>
+                      <span className="font-medium text-sm">
+                        Loading issues...
+                      </span>
                     </div>
                   </motion.div>
                 ) : filteredIssues.length === 0 ? (

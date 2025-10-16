@@ -20,6 +20,14 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 import ScheduleReviewForm from "./ScheduleReviewForm";
 import ScheduledReviews from "./ScheduledReviews";
 import { exportAllTabsToPDF } from "../lib/pdfExport";
@@ -304,6 +312,263 @@ export const MLADashboard = () => {
   const [selectedTab, setSelectedTab] = useState("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedInsight, setSelectedInsight] = useState(null);
+  const [isInsightDialogOpen, setIsInsightDialogOpen] = useState(false);
+
+  // Detailed AI insights data
+  const aiInsights = [
+    {
+      id: 1,
+      title: "Optimize Response Time",
+      priority: "High",
+      impact: "High",
+      shortDescription:
+        "Department response time has increased by 15% this month. Consider implementing automated workflows.",
+      implementationTime: "2-3 weeks",
+      cost: "₹50,000",
+      type: "Performance",
+      detailedDescription: `## Response Time Optimization Analysis
+
+### Current Situation
+Our constituency's department response time has increased by 15% over the past month, primarily affecting:
+- Water supply complaints (avg. 3.2 days → 3.7 days)
+- Road maintenance requests (avg. 2.8 days → 3.2 days)
+- Electricity issues (avg. 1.9 days → 2.2 days)
+
+### Root Cause Analysis
+1. **Manual Process Bottlenecks**: 60% of time spent on administrative tasks
+2. **Resource Allocation**: Understaffed during peak complaint periods
+3. **Communication Gaps**: Delays in inter-department coordination
+
+### Proposed Solution
+Implement automated workflow management system with:
+- **Smart Routing**: AI-powered complaint categorization and assignment
+- **Real-time Tracking**: GPS-enabled field worker monitoring
+- **Automated Notifications**: SMS/Email alerts for status updates
+- **Performance Dashboards**: Real-time metrics for department heads
+
+### Expected Benefits
+- **40% reduction** in average response time
+- **25% increase** in citizen satisfaction scores
+- **30% improvement** in resource utilization
+- **Cost savings** of ₹2.5M annually through efficiency gains
+
+### Implementation Timeline
+- **Week 1-2**: System setup and configuration
+- **Week 3**: Staff training and pilot testing
+- **Week 4**: Full deployment and monitoring
+
+### Risk Mitigation
+- Gradual rollout to minimize disruption
+- Comprehensive training program
+- 24/7 technical support during transition
+- Backup manual processes during initial phase`,
+      metrics: {
+        currentResponseTime: "3.2 days",
+        targetResponseTime: "2.0 days",
+        affectedComplaints: "1,247",
+        potentialSavings: "₹2.5M annually",
+      },
+    },
+    {
+      id: 2,
+      title: "Budget Reallocation",
+      priority: "Medium",
+      impact: "Medium",
+      shortDescription:
+        "Roads department has 16% budget remaining. Consider reallocating to high-priority projects.",
+      implementationTime: "1 week",
+      cost: "₹0",
+      type: "Budget",
+      detailedDescription: `## Budget Reallocation Strategy
+
+### Current Budget Status
+- **Roads Department**: 16% budget remaining (₹4.2M out of ₹25M)
+- **Water Department**: 8% budget remaining (₹1.8M out of ₹22M)
+- **Electricity Department**: 12% budget remaining (₹2.6M out of ₹21M)
+
+### Analysis Findings
+1. **Underutilized Funds**: ₹8.6M across departments
+2. **High-Priority Projects**: 23 pending projects requiring immediate attention
+3. **Seasonal Patterns**: Road maintenance peaks in monsoon season
+
+### Recommended Reallocation
+**From Roads Department (₹4.2M)**:
+- ₹2.5M → Water infrastructure upgrades
+- ₹1.7M → Emergency response equipment
+
+**From Water Department (₹1.8M)**:
+- ₹1.2M → Smart metering system
+- ₹0.6M → Water quality monitoring
+
+**From Electricity Department (₹2.6M)**:
+- ₹1.8M → Solar street lighting
+- ₹0.8M → Grid modernization
+
+### Impact Assessment
+- **Immediate**: Address 15 high-priority projects
+- **Medium-term**: Improve infrastructure resilience
+- **Long-term**: Enhanced citizen satisfaction and economic growth
+
+### Approval Process
+1. Department head review and approval
+2. Financial committee assessment
+3. MLA office final approval
+4. Implementation within 7 days`,
+      metrics: {
+        totalAvailable: "₹8.6M",
+        highPriorityProjects: "23",
+        expectedCompletion: "85%",
+        citizenImpact: "12,500 residents",
+      },
+    },
+    {
+      id: 3,
+      title: "Mobile App Enhancement",
+      priority: "Medium",
+      impact: "High",
+      shortDescription:
+        "User engagement drops 40% on weekends. Consider 24/7 support and mobile notifications.",
+      implementationTime: "4-6 weeks",
+      cost: "₹200,000",
+      type: "User Experience",
+      detailedDescription: `## Mobile App Enhancement Plan
+
+### Current User Engagement Analysis
+- **Weekday Usage**: 2,847 active users (avg.)
+- **Weekend Usage**: 1,708 active users (40% drop)
+- **Peak Hours**: 7-9 AM, 6-8 PM
+- **User Complaints**: 23% report difficulty accessing services
+
+### Key Issues Identified
+1. **Limited Weekend Support**: Only emergency services available
+2. **Poor Offline Experience**: App crashes without internet
+3. **Complex Navigation**: Users struggle to find features
+4. **No Push Notifications**: Users miss important updates
+
+### Enhancement Strategy
+
+#### Phase 1: Core Improvements (Weeks 1-2)
+- **24/7 Chat Support**: AI-powered chatbot for common queries
+- **Offline Mode**: Downloadable forms and basic functionality
+- **Simplified UI**: Streamlined navigation and user flow
+
+#### Phase 2: Advanced Features (Weeks 3-4)
+- **Smart Notifications**: Personalized alerts based on user behavior
+- **Voice Commands**: Accessibility features for elderly users
+- **Multi-language Support**: Tamil, Telugu, and English
+
+#### Phase 3: Integration (Weeks 5-6)
+- **Payment Gateway**: Direct bill payments within app
+- **Document Upload**: Photo capture for complaint evidence
+- **Real-time Tracking**: Live updates on complaint status
+
+### Expected Outcomes
+- **60% increase** in weekend engagement
+- **35% reduction** in support tickets
+- **45% improvement** in user satisfaction
+- **25% increase** in complaint resolution rate
+
+### Technical Requirements
+- Cloud infrastructure upgrade
+- Mobile app development team (4 developers)
+- UI/UX design improvements
+- Security and compliance testing`,
+      metrics: {
+        currentUsers: "2,847",
+        targetUsers: "4,500",
+        engagementIncrease: "60%",
+        supportReduction: "35%",
+      },
+    },
+    {
+      id: 4,
+      title: "Smart City Integration",
+      priority: "Low",
+      impact: "High",
+      shortDescription:
+        "Implement IoT sensors for real-time monitoring of water supply and electricity.",
+      implementationTime: "3-4 months",
+      cost: "₹2,500,000",
+      type: "Infrastructure",
+      detailedDescription: `## Smart City Integration Initiative
+
+### Vision Statement
+Transform our constituency into a smart city hub with IoT-enabled infrastructure for improved citizen services and operational efficiency.
+
+### Current Infrastructure Assessment
+- **Water Supply**: 45% manual monitoring, frequent leakages
+- **Electricity Grid**: 60% analog meters, power theft issues
+- **Traffic Management**: No real-time monitoring system
+- **Waste Management**: Manual collection scheduling
+
+### IoT Implementation Plan
+
+#### Water Management System
+**Smart Water Meters** (₹800,000):
+- Real-time consumption monitoring
+- Leak detection and automatic alerts
+- Remote meter reading capabilities
+- Water quality monitoring sensors
+
+**Benefits**:
+- 30% reduction in water wastage
+- 50% faster leak detection
+- Automated billing system
+
+#### Smart Electricity Grid (₹1,200,000)
+**Smart Meters & Sensors**:
+- Real-time power consumption tracking
+- Automatic fault detection
+- Load balancing optimization
+- Power theft prevention
+
+**Benefits**:
+- 25% reduction in power losses
+- 40% faster outage restoration
+- Improved grid stability
+
+#### Traffic Management System (₹500,000)
+**Smart Traffic Lights**:
+- AI-powered traffic flow optimization
+- Emergency vehicle priority system
+- Real-time traffic monitoring
+- Congestion prediction
+
+**Benefits**:
+- 35% reduction in traffic congestion
+- 20% improvement in air quality
+- Faster emergency response
+
+### Implementation Timeline
+- **Month 1**: Infrastructure assessment and planning
+- **Month 2**: IoT sensor installation and testing
+- **Month 3**: System integration and staff training
+- **Month 4**: Full deployment and monitoring
+
+### Funding Strategy
+- **Central Government Grant**: ₹1,500,000 (60%)
+- **State Government Support**: ₹750,000 (30%)
+- **Local Budget Allocation**: ₹250,000 (10%)
+
+### Success Metrics
+- **Operational Efficiency**: 40% improvement
+- **Citizen Satisfaction**: 50% increase
+- **Cost Savings**: ₹5M annually
+- **Environmental Impact**: 30% reduction in resource wastage`,
+      metrics: {
+        totalInvestment: "₹2.5M",
+        expectedROI: "200%",
+        citizenBenefit: "45,000 residents",
+        annualSavings: "₹5M",
+      },
+    },
+  ];
+
+  const handleViewInsight = (insight) => {
+    setSelectedInsight(insight);
+    setIsInsightDialogOpen(true);
+  };
 
   const { user } = useUser();
   const constituencyId = user?.constituency_id || "64f1a2b3c4d5e6f7g8h9i0j1"; // Fallback ID
@@ -1204,184 +1469,53 @@ export const MLADashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {/* This section would typically fetch AI suggestions from an API */}
-                  {/* For now, we'll use a placeholder or a simple list */}
-                  <motion.div
-                    className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
-                            Optimize Response Time
-                          </h4>
-                          <Badge className={getAIPriorityColor("High")}>
-                            High
-                          </Badge>
-                          <Badge className={getAIImpactColor("High")}>
-                            Impact: High
-                          </Badge>
+                  {aiInsights.map((insight, index) => (
+                    <motion.div
+                      key={insight.id}
+                      className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
+                              {insight.title}
+                            </h4>
+                            <Badge
+                              className={getAIPriorityColor(insight.priority)}
+                            >
+                              {insight.priority}
+                            </Badge>
+                            <Badge className={getAIImpactColor(insight.impact)}>
+                              Impact: {insight.impact}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-400 mb-3">
+                            {insight.shortDescription}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span>
+                              Implementation: {insight.implementationTime}
+                            </span>
+                            <span>Cost: {insight.cost}</span>
+                            <span>Type: {insight.type}</span>
+                          </div>
                         </div>
-                        <p className="text-gray-600 dark:text-gray-400 mb-3">
-                          Department response time has increased by 15% this
-                          month. Consider implementing automated workflows.
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>Implementation: 2-3 weeks</span>
-                          <span>Cost: ₹50,000</span>
-                          <span>Type: Performance</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Implement
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Customize
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
-                            Budget Reallocation
-                          </h4>
-                          <Badge className={getAIPriorityColor("Medium")}>
-                            Medium
-                          </Badge>
-                          <Badge className={getAIImpactColor("Medium")}>
-                            Impact: Medium
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 mb-3">
-                          Roads department has 16% budget remaining. Consider
-                          reallocating to high-priority projects.
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>Implementation: 1 week</span>
-                          <span>Cost: ₹0</span>
-                          <span>Type: Budget</span>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleViewInsight(insight)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Implement
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Customize
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
-                            Mobile App Enhancement
-                          </h4>
-                          <Badge className={getAIPriorityColor("Medium")}>
-                            Medium
-                          </Badge>
-                          <Badge className={getAIImpactColor("High")}>
-                            Impact: High
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 mb-3">
-                          User engagement drops 40% on weekends. Consider 24/7
-                          support and mobile notifications.
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>Implementation: 4-6 weeks</span>
-                          <span>Cost: ₹200,000</span>
-                          <span>Type: User Experience</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Implement
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Customize
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
-                            Smart City Integration
-                          </h4>
-                          <Badge className={getAIPriorityColor("Low")}>
-                            Low
-                          </Badge>
-                          <Badge className={getAIImpactColor("High")}>
-                            Impact: High
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 mb-3">
-                          Implement IoT sensors for real-time monitoring of
-                          water supply and electricity.
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>Implementation: 3-4 months</span>
-                          <span>Cost: ₹2,500,000</span>
-                          <span>Type: Infrastructure</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Implement
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Customize
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -1451,6 +1585,131 @@ export const MLADashboard = () => {
         </Button>
         <ScheduleReviewForm />
       </motion.div>
+
+      {/* AI Insight Details Dialog */}
+      <Dialog open={isInsightDialogOpen} onOpenChange={setIsInsightDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-purple-600" />
+              {selectedInsight?.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedInsight && (
+            <div className="space-y-6">
+              {/* Insight Summary */}
+              <div className="bg-slate-50 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <Badge
+                    className={getAIPriorityColor(selectedInsight.priority)}
+                  >
+                    {selectedInsight.priority} Priority
+                  </Badge>
+                  <Badge className={getAIImpactColor(selectedInsight.impact)}>
+                    {selectedInsight.impact} Impact
+                  </Badge>
+                  <Badge variant="outline">{selectedInsight.type}</Badge>
+                </div>
+                <p className="text-slate-700 mb-3">
+                  {selectedInsight.shortDescription}
+                </p>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-slate-600">
+                      Implementation:
+                    </span>
+                    <span className="ml-2 text-slate-800">
+                      {selectedInsight.implementationTime}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-slate-600">Cost:</span>
+                    <span className="ml-2 text-slate-800">
+                      {selectedInsight.cost}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-slate-600">Type:</span>
+                    <span className="ml-2 text-slate-800">
+                      {selectedInsight.type}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Description */}
+              <div className="prose prose-slate max-w-none">
+                <div
+                  className="whitespace-pre-wrap text-slate-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: selectedInsight.detailedDescription
+                      .replace(
+                        /## (.*)/g,
+                        '<h2 class="text-xl font-bold text-slate-800 mt-6 mb-3">$1</h2>',
+                      )
+                      .replace(
+                        /### (.*)/g,
+                        '<h3 class="text-lg font-semibold text-slate-800 mt-4 mb-2">$1</h3>',
+                      )
+                      .replace(
+                        /\*\*(.*?)\*\*/g,
+                        '<strong class="font-semibold text-slate-800">$1</strong>',
+                      )
+                      .replace(/- (.*)/g, '<li class="ml-4 mb-1">$1</li>')
+                      .replace(/\n\n/g, "<br><br>"),
+                  }}
+                />
+              </div>
+
+              {/* Key Metrics */}
+              {selectedInsight.metrics && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                    Key Metrics
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Object.entries(selectedInsight.metrics).map(
+                      ([key, value]) => (
+                        <div key={key} className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {String(value)}
+                          </div>
+                          <div className="text-sm text-slate-600 capitalize">
+                            {key.replace(/([A-Z])/g, " $1").trim()}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsInsightDialogOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                // Here you could add logic to implement the insight
+                toast.success(
+                  `Implementation plan for "${selectedInsight?.title}" has been saved!`,
+                );
+                setIsInsightDialogOpen(false);
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Save Implementation Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

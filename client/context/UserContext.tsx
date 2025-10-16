@@ -9,6 +9,7 @@ import { User as AuthUser, UserRole } from "../types/auth";
 import { authService } from "../services/authService";
 
 interface User {
+  id: string;
   name: string;
   role: UserRole;
   position: string;
@@ -17,8 +18,10 @@ interface User {
   constituency_name: string;
   panchayat_id: string;
   panchayat_name: string;
-  ward_no: string;
+  ward_id: string;
   ward_name: string;
+  department_id: string;
+  department_name: string;
 }
 
 interface UserContextType {
@@ -70,7 +73,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
               return "User";
           }
         };
+        console.log(apiUser);
         setUser({
+          id: apiUser.id,
           name: apiUser.name,
           role: userRole,
           position: apiUser.position || getPositionFromRole(userRole),
@@ -79,8 +84,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
           constituency_name: apiUser.constituency_name || "",
           panchayat_id: apiUser.panchayat_id || "",
           panchayat_name: apiUser.panchayat_name || "",
-          ward_no: apiUser.ward_no || "",
+          ward_id: apiUser.ward_id || "",
           ward_name: apiUser.ward_name || "",
+          department_id: apiUser.department_id || "",
+          department_name: apiUser.department_name || "",
         });
       } catch (error) {
         console.error("Error parsing user data:", error);

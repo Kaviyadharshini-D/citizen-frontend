@@ -236,10 +236,10 @@ export default function Signup() {
         phone_number: formData.phone,
         constituency_id: selectedConstituency.id,
         panchayat_id: selectedPanchayat._id,
-        ward_no: selectedWard?.ward_id,
+        ward_id: selectedWard?.ward_id,
+        department_id: selectedConstituency.id,
+        department_name: selectedConstituency.name,
       };
-
-      console.log(signupData);
 
       await signupMutation.mutateAsync(signupData);
     } catch (err) {
@@ -285,7 +285,9 @@ export default function Signup() {
         phone_number: formData.phone || "+91 9876543210",
         constituency_id: firstConstituency.id,
         panchayat_id: firstPanchayat.id,
-        ward_no: firstPanchayat.ward_list[0]?.ward_name || "Ward 1",
+        ward_id: firstPanchayat.ward_list[0]?.ward_name || "Ward 1",
+        department_id: firstConstituency.id,
+        department_name: firstConstituency.name,
       };
 
       await googleSignupMutation.mutateAsync(mockGoogleUser);

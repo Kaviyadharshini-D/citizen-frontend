@@ -57,8 +57,10 @@ export default function Login() {
           constituency_name: user.constituency_name || "",
           panchayat_id: user.panchayat_id || "",
           panchayat_name: user.panchayat_name || "",
-          ward_no: user.ward_no || "",
+          ward_id: user.ward_id || "",
           ward_name: user.ward_name || "",
+          department_id: user.department_id || "",
+          department_name: user.department_name || "",
         });
         redirectBasedOnRole(user.role);
       }

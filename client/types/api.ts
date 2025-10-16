@@ -44,6 +44,45 @@ export interface User {
   panchayat_name: string;
   ward_no: string;
   ward_name: string;
+  department_id: string;
+  department_name: string;
+}
+
+// Department Types
+export interface Department {
+  _id: string;
+  name: string;
+  code: string;
+  description?: string;
+  head_mla_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DepartmentsResponse {
+  success: boolean;
+  message: string;
+  data: Department[];
+}
+
+// Employee Types
+export interface Employee {
+  id: string;
+  name: string;
+  role: string;
+  specialization: string;
+  issues_resolved: number;
+  avg_response_time: number;
+  satisfaction: number;
+  efficiency: number;
+  department_id: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DepartmentEmployeesResponse {
+  employees: Employee[];
+  total: number;
 }
 
 export interface UserDetails {
@@ -84,7 +123,7 @@ export interface Panchayat {
 
 // Issue Types
 export interface Issue {
-  id: string;
+  _id: string;
   title: string;
   detail: string;
   locality: string;
@@ -133,7 +172,9 @@ export interface SignupRequest {
   phone_number: string;
   constituency_id: string;
   panchayat_id: string;
-  ward_no: string;
+  ward_id: string;
+  department_id: string;
+  department_name: string;
 }
 
 export interface GoogleSignupRequest {
@@ -143,7 +184,9 @@ export interface GoogleSignupRequest {
   phone_number: string;
   constituency_id: string;
   panchayat_id: string;
-  ward_no: string;
+  ward_id: string;
+  department_id: string;
+  department_name: string;
 }
 
 export interface ChangePasswordRequest {
@@ -300,7 +343,7 @@ export interface MLAProfile {
   photo_url?: string;
   bio?: string;
   term_start?: string; // ISO date
-  term_end?: string;   // ISO date
+  term_end?: string; // ISO date
   status: "active" | "inactive" | "ended";
   constituency_id?: string; // one-to-one link
   created_at?: string;
@@ -410,4 +453,47 @@ export interface MLADashboardStatsResponse {
   success: boolean;
   message: string;
   data: MLADashboardStats;
+}
+
+// Meeting Types
+export interface Meeting {
+  _id: string;
+  meetingName: string;
+  departments: string[];
+  date: string;
+  time: string;
+  description?: string;
+  status: "scheduled" | "completed" | "cancelled";
+  constituency_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMeetingRequest {
+  meetingName: string;
+  departments: string[];
+  date: string;
+  time: string;
+  description?: string;
+}
+
+export interface UpdateMeetingRequest {
+  meetingName?: string;
+  departments?: string[];
+  date?: string;
+  time?: string;
+  description?: string;
+  status?: "scheduled" | "completed" | "cancelled";
+}
+
+export interface MeetingsResponse {
+  success: boolean;
+  message: string;
+  data: Meeting[];
+}
+
+export interface MeetingResponse {
+  success: boolean;
+  message: string;
+  data: Meeting;
 }

@@ -1,16 +1,17 @@
 // client/lib/data/sync.ts
 // Data synchronization service for real-time updates
 
-import { dataManager } from './store';
-import { apiService } from './api';
-import { 
-  Constituency, 
-  MLA, 
-  Party, 
+import { dataManager } from "./store";
+import { apiService } from "./api";
+import {
+  Constituency,
+  MLA,
+  Party,
   DashboardStats,
   ConstituencyStats,
-  MLAStats
-} from './types';
+  MLAStats,
+} from "./types";
+import { useEffect, useState } from "react";
 
 export interface SyncConfig {
   enabled: boolean;
@@ -29,7 +30,7 @@ export class DataSyncService {
     this.config = {
       enabled: true,
       intervalMs: 30000, // 30 seconds
-      entities: ['constituencies', 'mlas', 'parties', 'dashboardStats'],
+      entities: ["constituencies", "mlas", "parties", "dashboardStats"],
       ...config,
     };
   }
@@ -55,12 +56,14 @@ export class DataSyncService {
   }
 
   private async syncData(): Promise<void> {
-    const promises = this.config.entities.map(entity => this.syncEntity(entity));
-    
+    const promises = this.config.entities.map((entity) =>
+      this.syncEntity(entity),
+    );
+
     try {
       await Promise.allSettled(promises);
     } catch (error) {
-      console.error('Data sync failed:', error);
+      console.error("Data sync failed:", error);
       this.config.onError?.(error as Error);
     }
   }
@@ -68,26 +71,26 @@ export class DataSyncService {
   private async syncEntity(entity: string): Promise<void> {
     try {
       switch (entity) {
-        case 'constituencies':
+        case "constituencies":
           await this.syncConstituencies();
           break;
-        case 'mlas':
+        case "mlas":
           await this.syncMLAs();
           break;
-        case 'parties':
+        case "parties":
           await this.syncParties();
           break;
-        case 'dashboardStats':
+        case "dashboardStats":
           await this.syncDashboardStats();
           break;
-        case 'constituencyStats':
+        case "constituencyStats":
           await this.syncConstituencyStats();
           break;
-        case 'mlaStats':
+        case "mlaStats":
           await this.syncMLAStats();
           break;
       }
-      
+
       this.config.onSuccess?.(entity);
     } catch (error) {
       console.error(`Failed to sync ${entity}:`, error);
@@ -157,7 +160,7 @@ export class DataSyncService {
   // Update configuration
   updateConfig(newConfig: Partial<SyncConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (this.isRunning) {
       this.stop();
       this.start();
@@ -175,11 +178,11 @@ export class DataSyncService {
 
 // Global sync service instance
 export const dataSyncService = new DataSyncService({
-  enabled: process.env.NODE_ENV === 'production',
+  enabled: process.env.NODE_ENV === "production",
   intervalMs: 30000,
-  entities: ['constituencies', 'mlas', 'parties', 'dashboardStats'],
+  entities: ["constituencies", "mlas", "parties", "dashboardStats"],
   onError: (error) => {
-    console.error('Data sync error:', error);
+    console.error("Data sync error:", error);
     // Could integrate with error reporting service
   },
   onSuccess: (entity) => {
@@ -203,11 +206,14 @@ export function useDataSync(config?: Partial<SyncConfig>) {
 
     dataSyncService.updateConfig({
       onSuccess: (entity) => {
-        setLastSync(prev => ({ ...prev, [entity]: new Date().toISOString() }));
+        setLastSync((prev) => ({
+          ...prev,
+          [entity]: new Date().toISOString(),
+        }));
         originalOnSuccess?.(entity);
       },
       onError: (error) => {
-        setErrors(prev => ({ ...prev, [error.message]: error.message }));
+        setErrors((prev) => ({ ...prev, [error.message]: error.message }));
         originalOnError?.(error);
       },
     });
@@ -248,6 +254,3 @@ export function useDataSync(config?: Partial<SyncConfig>) {
     status: dataSyncService.getStatus(),
   };
 }
-
-
-

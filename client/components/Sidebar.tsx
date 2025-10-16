@@ -55,18 +55,19 @@ export function Sidebar() {
       case "dept":
       case "dept_staff":
         return [
-          ...baseItems,
+          {
+            icon: Home,
+            label: "Dashboard",
+            path: "/dashboard",
+            active:
+              location.pathname === "/dashboard" ||
+              location.pathname === "/analytics",
+          },
           {
             icon: Flag,
             label: "Issues",
             path: "/issues",
             active: location.pathname === "/issues",
-          },
-          {
-            icon: BarChart3,
-            label: "Analytics",
-            path: "/analytics",
-            active: location.pathname === "/analytics",
           },
           {
             icon: FileText,

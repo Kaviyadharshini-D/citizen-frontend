@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { DashboardHeader } from "../components/DashboardHeader";
@@ -7,16 +7,10 @@ import { DepartmentAnalytics } from "../components/DepartmentAnalytics";
 import { PanchayatBreakdown } from "../components/PanchayatBreakdown";
 import { RealtimeLeaderboard } from "../components/RealtimeLeaderboard";
 import { AIAlerts } from "../components/AIAlerts";
-import { DepartmentDashboard } from "../components/DepartmentDashboard";
 import { MLADashboard } from "../components/MLADashboard";
-import { AdminDashboard } from "../components/AdminDashboard";
 import UserDashboard from "../components/UserDashboard";
 import { useUser } from "../context/UserContext";
 import { motion } from "framer-motion";
-import {
-  fetchDepartmentDashboardData,
-  DepartmentDashboardData,
-} from "../data/dashboardData";
 import {
   TrendingUp,
   Clock,
@@ -30,21 +24,6 @@ import {
 
 export default function Index() {
   const { user } = useUser();
-  const [departmentData, setDepartmentData] =
-    useState<DepartmentDashboardData | null>(null);
-
-  const [loading, setLoading] = useState(false);
-
-  // Fetch department dashboard data when user role is Department
-  useEffect(() => {
-    if (user?.role === "dept" || user?.role === "dept_staff") {
-      setLoading(true);
-      fetchDepartmentDashboardData()
-        .then(setDepartmentData)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
-  }, [user?.role]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -159,23 +138,15 @@ export default function Index() {
     return <Navigate to="/admin" replace />;
   }
 
+  // Redirect department users to dedicated dashboard
+  if (user.role === "dept" || user.role === "dept_staff") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   // Determine which dashboard to show based on user role
   let dashboardContent;
 
-  if (user.role === "dept" || user.role === "dept_staff") {
-    dashboardContent = (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <DepartmentDashboard
-          data={departmentData!}
-          loading={loading || !departmentData}
-        />
-      </motion.div>
-    );
-  } else if (user.role === "mlastaff") {
+  if (user.role === "mlastaff") {
     dashboardContent = (
       <motion.div
         initial={{ opacity: 0 }}
@@ -193,16 +164,6 @@ export default function Index() {
         transition={{ duration: 0.5 }}
       >
         <UserDashboard />
-      </motion.div>
-    );
-  } else if (user.role === "admin") {
-    dashboardContent = (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <AdminDashboard />
       </motion.div>
     );
   } else {

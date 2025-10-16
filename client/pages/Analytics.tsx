@@ -1,5 +1,6 @@
 import { Layout } from "../components/Layout";
 import { DepartmentAnalytics } from "../components/DepartmentAnalytics";
+import { DepartmentStaffDashboard } from "../components/DepartmentStaffDashboard";
 import { UserAnalytics } from "../components/UserAnalytics";
 import { useUser } from "../context/UserContext";
 import { motion } from "framer-motion";
@@ -41,7 +42,7 @@ export default function Analytics() {
   };
 
   // Show Department-specific analytics for Department role
-  if (user?.role === "dept" || user?.role === "dept_staff") {
+  if (user?.role === "dept") {
     return (
       <Layout>
         <motion.div
@@ -51,6 +52,22 @@ export default function Analytics() {
           className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300"
         >
           <DepartmentAnalytics />
+        </motion.div>
+      </Layout>
+    );
+  }
+
+  // Show Department Staff Dashboard for Department Staff role
+  if (user?.role === "dept_staff") {
+    return (
+      <Layout>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300"
+        >
+          <DepartmentStaffDashboard />
         </motion.div>
       </Layout>
     );

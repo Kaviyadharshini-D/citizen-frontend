@@ -17,6 +17,13 @@ import {
   User as ApiUser,
   RoleTypes,
   MLADashboardData,
+  Meeting,
+  CreateMeetingRequest,
+  UpdateMeetingRequest,
+  MeetingsResponse,
+  MeetingResponse,
+  Department,
+  DepartmentsResponse,
 } from "../types/api";
 import { UserRole } from "../types/auth";
 
@@ -73,6 +80,16 @@ export const queryKeys = {
     "constituency",
     constituencyId,
   ],
+  departmentIssues: (departmentId: string) => [
+    "issues",
+    "department",
+    departmentId,
+  ],
+  departmentEmployees: (departmentId: string) => [
+    "employees",
+    "department",
+    departmentId,
+  ],
 
   // Location
   constituencies: ["constituencies"],
@@ -83,6 +100,14 @@ export const queryKeys = {
     "panchayats",
     "constituency",
     constituencyId,
+  ],
+
+  // Meetings
+  meetings: (constituencyId: string) => ["meetings", constituencyId],
+  meeting: (constituencyId: string, meetingId: string) => [
+    "meeting",
+    constituencyId,
+    meetingId,
   ],
 } as const;
 
@@ -331,6 +356,26 @@ export const useConstituencyIssues = (constituencyId: string) => {
   });
 };
 
+export const useDepartmentIssues = (departmentId: string) => {
+  return useQuery({
+    queryKey: queryKeys.departmentIssues(departmentId),
+    queryFn: () => apiService.getIssuesByDepartment(departmentId),
+    enabled: !!departmentId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 2,
+  });
+};
+
+export const useDepartmentEmployees = (departmentId: string) => {
+  return useQuery({
+    queryKey: queryKeys.departmentEmployees(departmentId),
+    queryFn: () => apiService.getDepartmentEmployees(departmentId),
+    enabled: !!departmentId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+  });
+};
+
 export const useCreateIssue = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -381,6 +426,32 @@ export const useUpdateIssue = () => {
   });
 };
 
+export const useAssignIssue = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, handledBy }: { id: string; handledBy: string }) =>
+      apiService.assignIssue(id, handledBy),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+      queryClient.invalidateQueries({ queryKey: ["issues"] });
+      toast({
+        title: "Issue Assigned",
+        description: "Issue has been assigned successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Assignment Failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useUpdateIssueStatus = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -398,7 +469,41 @@ export const useUpdateIssueStatus = () => {
     },
     onError: (error) => {
       toast({
-        title: "Status Update Failed",
+        title: "Update Failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useAddFeedback = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      feedback,
+      satisfactionScore,
+    }: {
+      id: string;
+      feedback: string;
+      satisfactionScore: number;
+    }) => apiService.addFeedback(id, feedback, satisfactionScore),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+      queryClient.invalidateQueries({ queryKey: ["issues"] });
+      queryClient.invalidateQueries({ queryKey: ["userIssues"] });
+      toast({
+        title: "Feedback Submitted",
+        description: "Your feedback has been submitted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Feedback Failed",
         description:
           error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
@@ -572,4 +677,119 @@ const redirectBasedOnRole = (role: string) => {
         break;
     }
   }, 100); // Small delay to ensure state updates are processed
+};
+
+// Meeting Hooks
+export const useMeetings = (constituencyId: string) => {
+  return useQuery({
+    queryKey: queryKeys.meetings(constituencyId),
+    queryFn: () => apiService.getMeetings(constituencyId),
+    enabled: !!constituencyId,
+  });
+};
+
+export const useMeeting = (constituencyId: string, meetingId: string) => {
+  return useQuery({
+    queryKey: queryKeys.meeting(constituencyId, meetingId),
+    queryFn: () => apiService.getMeetingById(constituencyId, meetingId),
+    enabled: !!constituencyId && !!meetingId,
+  });
+};
+
+export const useCreateMeeting = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      constituencyId,
+      data,
+    }: {
+      constituencyId: string;
+      data: CreateMeetingRequest;
+    }) => apiService.createMeeting(constituencyId, data),
+    onSuccess: (_, { constituencyId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.meetings(constituencyId),
+      });
+      toast({
+        title: "Meeting Scheduled",
+        description: "Meeting has been scheduled successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Scheduling Failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useUpdateMeeting = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      constituencyId,
+      meetingId,
+      data,
+    }: {
+      constituencyId: string;
+      meetingId: string;
+      data: UpdateMeetingRequest;
+    }) => apiService.updateMeeting(constituencyId, meetingId, data),
+    onSuccess: (_, { constituencyId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.meetings(constituencyId),
+      });
+      toast({
+        title: "Meeting Updated",
+        description: "Meeting has been updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteMeeting = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      constituencyId,
+      meetingId,
+    }: {
+      constituencyId: string;
+      meetingId: string;
+    }) => apiService.deleteMeeting(constituencyId, meetingId),
+    onSuccess: (_, { constituencyId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.meetings(constituencyId),
+      });
+      toast({
+        title: "Meeting Deleted",
+        description: "Meeting has been deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Deletion Failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
 };

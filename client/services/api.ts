@@ -26,6 +26,15 @@ import {
   PaginatedResponse,
   MLAProfile,
   AuditLogEntry,
+  Employee,
+  DepartmentEmployeesResponse,
+  Department,
+  DepartmentsResponse,
+  Meeting,
+  CreateMeetingRequest,
+  UpdateMeetingRequest,
+  MeetingsResponse,
+  MeetingResponse,
 } from "../types/api";
 
 const API_BASE_URL = "http://localhost:3333/api";
@@ -59,7 +68,6 @@ class ApiService {
       headers: this.getAuthHeaders(),
       ...options,
     };
-    console.log(url);
 
     // Create a timeout promise
     const timeoutPromise = new Promise<never>((_, reject) => {
@@ -178,6 +186,47 @@ class ApiService {
     }
   }
 
+  async getIssuesByDepartment(departmentId: string): Promise<IssuesResponse> {
+    try {
+      const response = await this.request<any>(
+        `/issues/department/${departmentId}`,
+      );
+      return response;
+    } catch (error) {
+      console.error("Error fetching issues by department:", error);
+      // Return empty response if API fails
+      return {
+        issues: [],
+        total: 0,
+        page: 1,
+        limit: 0,
+        totalPages: 0,
+      };
+    }
+  }
+
+  async getDepartmentEmployees(
+    departmentId: string,
+  ): Promise<DepartmentEmployeesResponse> {
+    try {
+      const response = await this.request<DepartmentEmployeesResponse>(
+        `/departments/${departmentId}/employees`,
+      );
+      return response;
+    } catch (error) {
+      console.error("Error fetching department employees:", error);
+      // Return empty response if API fails
+      return {
+        employees: [],
+        total: 0,
+      };
+    }
+  }
+
+  async getDepartments(): Promise<DepartmentsResponse> {
+    return this.request<DepartmentsResponse>("/departments");
+  }
+
   async updateIssue(id: string, data: Partial<Issue>): Promise<IssueResponse> {
     return this.request<IssueResponse>(`/issues/${id}`, {
       method: "PUT",
@@ -199,10 +248,17 @@ class ApiService {
     });
   }
 
-  async addFeedback(id: string, feedback: string): Promise<IssueResponse> {
+  async addFeedback(
+    id: string,
+    feedback: string,
+    satisfactionScore: number,
+  ): Promise<IssueResponse> {
     return this.request<IssueResponse>(`/issues/${id}/feedback`, {
       method: "POST",
-      body: JSON.stringify({ feedback }),
+      body: JSON.stringify({
+        feedback,
+        satisfaction_score: satisfactionScore,
+      }),
     });
   }
 
@@ -282,8 +338,6 @@ class ApiService {
     total_wards: number;
   }> {
     try {
-      console.log("Fetching constituency info for ID:", id);
-
       // First, get the constituency details
       const constituencyResponse = await this.request<{
         success: boolean;
@@ -304,8 +358,6 @@ class ApiService {
         };
       }>(`/constituencies/${id}`);
 
-      console.log("Constituency response:", constituencyResponse);
-
       if (!constituencyResponse.success || !constituencyResponse.data) {
         throw new Error("Failed to fetch constituency data");
       }
@@ -318,13 +370,6 @@ class ApiService {
         constituency.panchayats?.reduce((total, panchayat) => {
           return total + (panchayat.ward_list?.length || 0);
         }, 0) || 0;
-
-      console.log(
-        "Calculated panchayats:",
-        total_panchayats,
-        "wards:",
-        total_wards,
-      );
 
       // Try to get user counts - if these endpoints don't exist, we'll use fallback values
       let total_voters = 0;
@@ -382,7 +427,6 @@ class ApiService {
         total_wards,
       };
 
-      console.log("Final constituency info:", result);
       return result;
     } catch (error) {
       console.error("Error fetching constituency info:", error);
@@ -707,7 +751,8 @@ class ApiService {
   }): Promise<PaginatedResponse<Constituency>> {
     const search = new URLSearchParams();
     Object.entries(params || {}).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+      if (v !== undefined && v !== null && v !== "")
+        search.append(k, String(v));
     });
     const qs = search.toString();
     return this.request<PaginatedResponse<Constituency>>(
@@ -715,21 +760,32 @@ class ApiService {
     );
   }
 
-  async adminCreateConstituency(data: Partial<Constituency>): Promise<ApiResponse<Constituency>> {
+  async adminCreateConstituency(
+    data: Partial<Constituency>,
+  ): Promise<ApiResponse<Constituency>> {
     return this.request<ApiResponse<Constituency>>(`/admin/constituencies`, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async adminUpdateConstituency(id: string, data: Partial<Constituency>): Promise<ApiResponse<Constituency>> {
-    return this.request<ApiResponse<Constituency>>(`/admin/constituencies/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
+  async adminUpdateConstituency(
+    id: string,
+    data: Partial<Constituency>,
+  ): Promise<ApiResponse<Constituency>> {
+    return this.request<ApiResponse<Constituency>>(
+      `/admin/constituencies/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+    );
   }
 
-  async adminDeleteConstituency(id: string, options?: { force?: boolean; reason?: string }): Promise<ApiResponse> {
+  async adminDeleteConstituency(
+    id: string,
+    options?: { force?: boolean; reason?: string },
+  ): Promise<ApiResponse> {
     return this.request<ApiResponse>(`/admin/constituencies/${id}`, {
       method: "DELETE",
       body: options ? JSON.stringify(options) : undefined,
@@ -747,7 +803,8 @@ class ApiService {
   }): Promise<PaginatedResponse<MLAProfile>> {
     const search = new URLSearchParams();
     Object.entries(params || {}).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+      if (v !== undefined && v !== null && v !== "")
+        search.append(k, String(v));
     });
     const qs = search.toString();
     return this.request<PaginatedResponse<MLAProfile>>(
@@ -755,14 +812,19 @@ class ApiService {
     );
   }
 
-  async adminCreateMLA(data: Partial<MLAProfile>): Promise<ApiResponse<MLAProfile>> {
+  async adminCreateMLA(
+    data: Partial<MLAProfile>,
+  ): Promise<ApiResponse<MLAProfile>> {
     return this.request<ApiResponse<MLAProfile>>(`/admin/mlas`, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async adminUpdateMLA(id: string, data: Partial<MLAProfile>): Promise<ApiResponse<MLAProfile>> {
+  async adminUpdateMLA(
+    id: string,
+    data: Partial<MLAProfile>,
+  ): Promise<ApiResponse<MLAProfile>> {
     return this.request<ApiResponse<MLAProfile>>(`/admin/mlas/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
@@ -777,31 +839,55 @@ class ApiService {
   }
 
   // Assignment: one-to-one MLA <-> Constituency
-  async adminAssignMLAToConstituency(mlaId: string, constituencyId: string, reason?: string): Promise<ApiResponse> {
-    return this.request<ApiResponse>(`/admin/constituencies/${constituencyId}/mla`, {
-      method: "POST",
-      body: JSON.stringify({ mla_id: mlaId, reason }),
-    });
+  async adminAssignMLAToConstituency(
+    mlaId: string,
+    constituencyId: string,
+    reason?: string,
+  ): Promise<ApiResponse> {
+    return this.request<ApiResponse>(
+      `/admin/constituencies/${constituencyId}/mla`,
+      {
+        method: "POST",
+        body: JSON.stringify({ mla_id: mlaId, reason }),
+      },
+    );
   }
 
-  async adminUnassignMLAFromConstituency(constituencyId: string, reason?: string): Promise<ApiResponse> {
-    return this.request<ApiResponse>(`/admin/constituencies/${constituencyId}/mla`, {
-      method: "DELETE",
-      body: reason ? JSON.stringify({ reason }) : undefined,
-    });
+  async adminUnassignMLAFromConstituency(
+    constituencyId: string,
+    reason?: string,
+  ): Promise<ApiResponse> {
+    return this.request<ApiResponse>(
+      `/admin/constituencies/${constituencyId}/mla`,
+      {
+        method: "DELETE",
+        body: reason ? JSON.stringify({ reason }) : undefined,
+      },
+    );
   }
 
   // Users & Roles (admin)
-  async adminGetUsers(params?: { q?: string; role?: string; page?: number; limit?: number }): Promise<PaginatedResponse<any>> {
+  async adminGetUsers(params?: {
+    q?: string;
+    role?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<any>> {
     const search = new URLSearchParams();
     Object.entries(params || {}).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+      if (v !== undefined && v !== null && v !== "")
+        search.append(k, String(v));
     });
     const qs = search.toString();
-    return this.request<PaginatedResponse<any>>(`/admin/users${qs ? `?${qs}` : ""}`);
+    return this.request<PaginatedResponse<any>>(
+      `/admin/users${qs ? `?${qs}` : ""}`,
+    );
   }
 
-  async adminUpdateUserRole(userId: string, role: string): Promise<ApiResponse> {
+  async adminUpdateUserRole(
+    userId: string,
+    role: string,
+  ): Promise<ApiResponse> {
     return this.request<ApiResponse>(`/admin/users/${userId}/role`, {
       method: "PATCH",
       body: JSON.stringify({ role }),
@@ -809,10 +895,15 @@ class ApiService {
   }
 
   // Audit Trail
-  async adminGetAuditLogs(params?: { type?: string; limit?: number; page?: number }): Promise<PaginatedResponse<AuditLogEntry>> {
+  async adminGetAuditLogs(params?: {
+    type?: string;
+    limit?: number;
+    page?: number;
+  }): Promise<PaginatedResponse<AuditLogEntry>> {
     const search = new URLSearchParams();
     Object.entries(params || {}).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== "") search.append(k, String(v));
+      if (v !== undefined && v !== null && v !== "")
+        search.append(k, String(v));
     });
     const qs = search.toString();
     return this.request<PaginatedResponse<AuditLogEntry>>(
@@ -855,6 +946,61 @@ class ApiService {
       );
       throw error;
     }
+  }
+
+  // Meeting APIs
+  async createMeeting(
+    constituencyId: string,
+    data: CreateMeetingRequest,
+  ): Promise<MeetingResponse> {
+    return this.request<MeetingResponse>(
+      `/mla-dashboard/${constituencyId}/meetings`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+    );
+  }
+
+  async getMeetings(constituencyId: string): Promise<MeetingsResponse> {
+    return this.request<MeetingsResponse>(
+      `/mla-dashboard/${constituencyId}/meetings`,
+    );
+  }
+
+  async getMeetingById(
+    constituencyId: string,
+    meetingId: string,
+  ): Promise<MeetingResponse> {
+    return this.request<MeetingResponse>(
+      `/mla-dashboard/${constituencyId}/meetings/${meetingId}`,
+    );
+  }
+
+  async updateMeeting(
+    constituencyId: string,
+    meetingId: string,
+    data: UpdateMeetingRequest,
+  ): Promise<MeetingResponse> {
+    return this.request<MeetingResponse>(
+      `/mla-dashboard/${constituencyId}/meetings/${meetingId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+    );
+  }
+
+  async deleteMeeting(
+    constituencyId: string,
+    meetingId: string,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(
+      `/mla-dashboard/${constituencyId}/meetings/${meetingId}`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 }
 

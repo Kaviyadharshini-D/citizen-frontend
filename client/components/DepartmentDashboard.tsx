@@ -28,6 +28,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useDepartmentIssues, useAssignIssue } from "../hooks/useApi";
+import { useUser } from "../context/UserContext";
+import { Issue } from "../types/api";
 
 interface DepartmentDashboardProps {
   data: DepartmentDashboardData;
@@ -38,53 +41,19 @@ export function DepartmentDashboard({
   data,
   loading = false,
 }: DepartmentDashboardProps) {
-  type QueryStatus = "Pending" | "In Progress" | "Resolved";
-  type QueryPriority = "High" | "Medium" | "Low";
-  type DepartmentQuery = {
-    id: string;
-    title: string;
-    priority: QueryPriority;
-    status: QueryStatus;
-    assignedTo?: string | null;
-  };
+  const { user } = useUser();
+  const departmentId = user?.department_id || "default";
 
-  const [queries, setQueries] = React.useState<DepartmentQuery[]>([
-    {
-      id: "Q-101",
-      title: "Transformer maintenance at Ward 3",
-      priority: "High",
-      status: "Pending",
-      assignedTo: null,
-    },
-    {
-      id: "Q-102",
-      title: "New connection request backlog",
-      priority: "Medium",
-      status: "In Progress",
-      assignedTo: "Olivia Bennett",
-    },
-    {
-      id: "Q-103",
-      title: "Street light outage - Block B",
-      priority: "High",
-      status: "Pending",
-      assignedTo: null,
-    },
-    {
-      id: "Q-104",
-      title: "Meter reading discrepancies",
-      priority: "Low",
-      status: "In Progress",
-      assignedTo: "Ethan Harper",
-    },
-    {
-      id: "Q-105",
-      title: "Substation cooling issue",
-      priority: "High",
-      status: "Resolved",
-      assignedTo: "Noah Carter",
-    },
-  ]);
+  // Fetch department issues using React Query
+  const {
+    data: issuesData,
+    isLoading: issuesLoading,
+    error: issuesError,
+    refetch: refetchIssues,
+  } = useDepartmentIssues(departmentId);
+
+  // Assignment mutation
+  const assignIssueMutation = useAssignIssue();
 
   const [editOpen, setEditOpen] = React.useState(false);
   const [editingQueryId, setEditingQueryId] = React.useState<string | null>(
@@ -92,6 +61,37 @@ export function DepartmentDashboard({
   );
   const [selectedEmployeeId, setSelectedEmployeeId] =
     React.useState<string>("");
+
+  // Transform API issues to component format
+  const queries = React.useMemo(() => {
+    if (!issuesData?.issues) return [];
+    return issuesData.issues.map((issue: Issue) => {
+      // Format ID as Q-XXX (last 3 digits in caps)
+      const issueId = issue._id || (issue as any).id;
+      const lastThreeDigits = issueId.slice(-3).toUpperCase();
+      const formattedId = `Q-${lastThreeDigits}`;
+
+      return {
+        id: formattedId,
+        originalId: issueId, // Keep original ID for API calls
+        title: issue.title,
+        priority:
+          issue.priority_level === "high"
+            ? "High"
+            : issue.priority_level === "normal"
+              ? "Medium"
+              : "Low",
+        status:
+          issue.status === "pending"
+            ? "Pending"
+            : issue.status === "in_progress"
+              ? "In Progress"
+              : "Resolved",
+        assignedTo: issue.handled_by || null,
+        originalIssue: issue, // Keep reference to original issue for API calls
+      };
+    });
+  }, [issuesData]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -116,7 +116,7 @@ export function DepartmentDashboard({
   //   },
   // };
 
-  if (loading) {
+  if (loading || issuesLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         <motion.div
@@ -139,6 +139,28 @@ export function DepartmentDashboard({
           </div>
           <div className="h-96 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
         </motion.div>
+      </div>
+    );
+  }
+
+  // Show error state if API fails
+  if (issuesError) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+            Failed to Load Department Issues
+          </h3>
+          <p className="text-red-600 dark:text-red-400 mb-4">
+            {issuesError instanceof Error
+              ? issuesError.message
+              : "An error occurred while loading issues."}
+          </p>
+          <Button onClick={() => refetchIssues()} variant="outline">
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
@@ -328,7 +350,7 @@ export function DepartmentDashboard({
                           {q.assignedTo || "—"}
                         </td>
                         <td className="p-6">
-                          {q.status === "Pending" ? (
+                          {!q.assignedTo ? (
                             <Dialog
                               open={editOpen && editingQueryId === q.id}
                               onOpenChange={(o) => {
@@ -384,28 +406,38 @@ export function DepartmentDashboard({
                                         !selectedEmployeeId
                                       )
                                         return;
-                                      const employee = data.employees.find(
-                                        (e) => e.id === selectedEmployeeId,
+
+                                      // Find the original issue
+                                      const queryItem = queries.find(
+                                        (q) => q.id === editingQueryId,
                                       );
-                                      setQueries((prev) =>
-                                        prev.map((x) =>
-                                          x.id === editingQueryId
-                                            ? {
-                                                ...x,
-                                                assignedTo: employee
-                                                  ? employee.name
-                                                  : x.assignedTo,
-                                                status: "In Progress",
-                                              }
-                                            : x,
-                                        ),
+                                      if (!queryItem) return;
+
+                                      // Call the assignment API using original ID
+                                      assignIssueMutation.mutate(
+                                        {
+                                          id: queryItem.originalId,
+                                          handledBy: selectedEmployeeId,
+                                        },
+                                        {
+                                          onSuccess: () => {
+                                            setEditOpen(false);
+                                            setEditingQueryId(null);
+                                            setSelectedEmployeeId("");
+                                            // Refetch issues to get updated data
+                                            refetchIssues();
+                                          },
+                                        },
                                       );
-                                      setEditOpen(false);
-                                      setEditingQueryId(null);
                                     }}
-                                    disabled={!selectedEmployeeId}
+                                    disabled={
+                                      !selectedEmployeeId ||
+                                      assignIssueMutation.isPending
+                                    }
                                   >
-                                    Save
+                                    {assignIssueMutation.isPending
+                                      ? "Assigning..."
+                                      : "Save"}
                                   </Button>
                                 </DialogFooter>
                               </DialogContent>

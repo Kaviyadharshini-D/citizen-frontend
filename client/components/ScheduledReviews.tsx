@@ -23,6 +23,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import MeetingDetailsDialog from "./MeetingDetailsDialog";
+import {
+  useMeetings,
+  useUpdateMeeting,
+  useDeleteMeeting,
+} from "../hooks/useApi";
+import { useUser } from "../context/UserContext";
+import { Meeting } from "../types/api";
+import { convertTo24Hour, convertTo12Hour } from "../lib/timeUtils";
 
 interface ScheduledReview {
   id: string;
@@ -49,62 +57,19 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
   onDelete,
   onComplete,
 }) => {
-  const [scheduledReviews, setScheduledReviews] =
-    useState<ScheduledReview[]>(reviews);
-  const [selectedReview, setSelectedReview] = useState<ScheduledReview | null>(
-    null,
-  );
+  const { user } = useUser();
+  const constituencyId = user?.constituency_id || "";
+
+  // API hooks
+  const { data: meetingsData, isLoading, error } = useMeetings(constituencyId);
+  const updateMeetingMutation = useUpdateMeeting();
+  const deleteMeetingMutation = useDeleteMeeting();
+
+  const [selectedReview, setSelectedReview] = useState<Meeting | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Mock data for demonstration
-  useEffect(() => {
-    if (reviews.length === 0) {
-      const mockReviews: ScheduledReview[] = [
-        {
-          id: "1",
-          meetingName: "Monthly Performance Review",
-          departments: ["Roads & Transport", "Water Supply", "Electricity"],
-          date: "2024-01-15",
-          time: "10:00",
-          description:
-            "Review monthly performance metrics and discuss upcoming projects.",
-          status: "scheduled",
-          createdAt: "2024-01-10T09:00:00Z",
-          updatedAt: "2024-01-10T09:00:00Z",
-        },
-        {
-          id: "2",
-          meetingName: "Quarterly Budget Review",
-          departments: [
-            "Sanitation",
-            "Education",
-            "Healthcare",
-            "Public Works",
-          ],
-          date: "2024-01-20",
-          time: "14:00",
-          description:
-            "Quarterly budget allocation review and expenditure analysis.",
-          status: "scheduled",
-          createdAt: "2024-01-12T11:00:00Z",
-          updatedAt: "2024-01-12T11:00:00Z",
-        },
-        {
-          id: "3",
-          meetingName: "Emergency Response Meeting",
-          departments: ["Police", "Urban Development", "Revenue"],
-          date: "2024-01-08",
-          time: "09:30",
-          description:
-            "Emergency response coordination and disaster preparedness review.",
-          status: "completed",
-          createdAt: "2024-01-05T08:00:00Z",
-          updatedAt: "2024-01-08T12:00:00Z",
-        },
-      ];
-      setScheduledReviews(mockReviews);
-    }
-  }, [reviews]);
+  // Transform API data to component format
+  const scheduledReviews: Meeting[] = meetingsData?.data || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -132,24 +97,34 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
     }
   };
 
-  const handleView = (review: ScheduledReview) => {
+  const handleView = (review: Meeting) => {
     setSelectedReview(review);
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (review: ScheduledReview) => {
+  const handleEdit = (review: Meeting) => {
     setSelectedReview(review);
     setIsDialogOpen(true);
   };
 
-  const handleEditSubmit = (updatedReview: ScheduledReview) => {
+  const handleEditSubmit = (updatedReview: Meeting) => {
     if (onEdit) {
-      onEdit(updatedReview);
+      onEdit(updatedReview as any);
     } else {
-      setScheduledReviews((prev) =>
-        prev.map((r) => (r.id === updatedReview.id ? updatedReview : r)),
-      );
-      toast.success("Meeting details updated successfully");
+      // Convert time to 24-hour format before sending to API
+      const time24Hour = convertTo24Hour(updatedReview.time);
+
+      updateMeetingMutation.mutate({
+        constituencyId,
+        meetingId: updatedReview._id,
+        data: {
+          meetingName: updatedReview.meetingName,
+          departments: updatedReview.departments,
+          date: updatedReview.date,
+          time: time24Hour,
+          description: updatedReview.description,
+        },
+      });
     }
   };
 
@@ -157,8 +132,10 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
     if (onDelete) {
       onDelete(reviewId);
     } else {
-      setScheduledReviews((prev) => prev.filter((r) => r.id !== reviewId));
-      toast.success("Review meeting deleted successfully");
+      deleteMeetingMutation.mutate({
+        constituencyId,
+        meetingId: reviewId,
+      });
     }
     setIsDialogOpen(false);
     setSelectedReview(null);
@@ -168,12 +145,11 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
     if (onComplete) {
       onComplete(reviewId);
     } else {
-      setScheduledReviews((prev) =>
-        prev.map((r) =>
-          r.id === reviewId ? { ...r, status: "completed" as const } : r,
-        ),
-      );
-      toast.success("Review meeting marked as completed");
+      updateMeetingMutation.mutate({
+        constituencyId,
+        meetingId: reviewId,
+        data: { status: "completed" },
+      });
     }
     setIsDialogOpen(false);
     setSelectedReview(null);
@@ -194,11 +170,7 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
   };
 
   const formatTime = (timeString: string) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return convertTo12Hour(timeString);
   };
 
   const isUpcoming = (dateString: string) => {
@@ -216,6 +188,39 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
     }
     return new Date(a.date).getTime() - new Date(b.date).getTime();
   });
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-3 text-slate-600">
+            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-lg font-medium">Loading meetings...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="text-red-500 mb-4">
+            <AlertCircle className="h-12 w-12 mx-auto" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 mb-2">
+            Failed to load meetings
+          </h3>
+          <p className="text-slate-600">
+            {error instanceof Error ? error.message : "Please try again later"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -251,7 +256,7 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {sortedReviews.map((review, index) => (
           <motion.div
-            key={review.id}
+            key={review._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
@@ -348,7 +353,7 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
                       <Button
                         size="sm"
                         className="bg-green-600 hover:bg-green-700"
-                        onClick={() => handleComplete(review.id)}
+                        onClick={() => handleComplete(review._id)}
                       >
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Complete
@@ -358,7 +363,7 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
                       variant="outline"
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => handleDelete(review.id)}
+                      onClick={() => handleDelete(review._id)}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -390,14 +395,16 @@ export const ScheduledReviews: React.FC<ScheduledReviewsProps> = ({
       )}
 
       {/* Meeting Details Dialog */}
-      <MeetingDetailsDialog
-        review={selectedReview}
-        isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        onEdit={handleEditSubmit}
-        onDelete={handleDelete}
-        onComplete={handleComplete}
-      />
+      {selectedReview && (
+        <MeetingDetailsDialog
+          review={selectedReview as any}
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          onEdit={handleEditSubmit as any}
+          onDelete={handleDelete}
+          onComplete={handleComplete}
+        />
+      )}
     </div>
   );
 };
